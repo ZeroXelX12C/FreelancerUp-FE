@@ -6,14 +6,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import FileUpload from "@/components/ui/file-upload"
 import SkillTagInput from "@/components/freelancer/SkillTagInput"
-import { FreelancerProfile } from "@/app/types/api.types"
+import { FreelancerProfile, UpdateFreelancerProfileRequest } from "@/app/types/api.types"
 
 interface ExperienceItem { role?: string; company?: string; years?: string }
 interface EducationItem { school?: string; degree?: string; years?: string }
 
 interface ProfileFormProps {
   initialData?: FreelancerProfile | null
-  onSubmit: (data: unknown) => Promise<void>
+  onSubmit: (data: UpdateFreelancerProfileRequest) => Promise<void>
 }
 
 export function ProfileForm({ initialData = null, onSubmit }: ProfileFormProps) {
@@ -44,14 +44,14 @@ export function ProfileForm({ initialData = null, onSubmit }: ProfileFormProps) 
     setError(null)
 
     try {
-      const payload: unknown = {
+      const payload: UpdateFreelancerProfileRequest = {
         fullName,
         bio,
         hourlyRate: hourlyRate ?? undefined,
         skills,
         // attach experience & education if provided (backend may ignore)
-        experience,
-        education,
+        experience: experience.length ? experience : undefined,
+        education: education.length ? education : undefined,
       }
 
       // If we have new avatar file, convert to base64 for demo (backend must support multipart)
@@ -61,7 +61,8 @@ export function ProfileForm({ initialData = null, onSubmit }: ProfileFormProps) 
 
       await onSubmit(payload)
     } catch (err: unknown) {
-      setError(err?.message || "Có lỗi xảy ra khi cập nhật profile.")
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg || "Có lỗi xảy ra khi cập nhật profile.")
     } finally {
       setLoading(false)
     }

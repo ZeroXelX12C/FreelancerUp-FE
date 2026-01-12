@@ -5,32 +5,30 @@ import { useRouter } from "next/navigation"
 import { freelancerApi } from "@/lib/api"
 import ProfileForm from "@/components/freelancer/ProfileForm"
 import { Button } from "@/components/ui/button"
+import { FreelancerProfile, UpdateFreelancerProfileRequest } from "@/app/types/api.types"
+
+const SAMPLE_PROFILE: FreelancerProfile = {
+  id: 'sample-1',
+  fullName: 'Nguyễn Văn A',
+  email: 'nguyenvana@example.com',
+  avatar: 'https://i.pravatar.cc/300?u=ng-v-a',
+  bio: 'Kỹ sư phần mềm với 5 năm kinh nghiệm về React và Node.js. Thích xây dựng sản phẩm sáng tạo.',
+  skills: ['React', 'TypeScript', 'Node.js', 'Tailwind CSS'],
+  hourlyRate: 45,
+  experience: [{ role: 'Senior Frontend', company: 'ACME Corp', years: '2019-2023' }],
+  education: [{ school: 'Đại học Bách Khoa', degree: 'Công nghệ thông tin', years: '2014-2018' }],
+  updatedAt: new Date().toISOString(),
+} 
 
 export default function FreelancerProfilePage() {
   const router = useRouter()
-  const [profile, setProfile] = React.useState<any | null>(null)
+  const [profile, setProfile] = React.useState<FreelancerProfile | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
   const [saving, setSaving] = React.useState(false)
   const [useMock, setUseMock] = React.useState<boolean>(true)
   const [lastAction, setLastAction] = React.useState<string | null>(null)
 
-  const SAMPLE_PROFILE = {
-    id: 'sample-1',
-    fullName: 'Nguyễn Văn A',
-    email: 'nguyenvana@example.com',
-    avatar: 'https://i.pravatar.cc/300?u=ng-v-a',
-    bio: 'Kỹ sư phần mềm với 5 năm kinh nghiệm về React và Node.js. Thích xây dựng sản phẩm sáng tạo.',
-    skills: ['React', 'TypeScript', 'Node.js', 'Tailwind CSS'],
-    hourlyRate: 45,
-    experience: [{ role: 'Senior Frontend', company: 'ACME Corp', years: '2019-2023' }],
-    education: [{ school: 'Đại học Bách Khoa', degree: 'Công nghệ thông tin', years: '2014-2018' }],
-    updatedAt: new Date().toISOString(),
-  }
-
-  React.useEffect(() => {
-    fetchProfile()
-  }, [])
 
   const loadSample = () => {
     setProfile(SAMPLE_PROFILE)
@@ -38,7 +36,7 @@ export default function FreelancerProfilePage() {
     setLastAction('Loaded sample profile')
   }
 
-  const fetchProfile = async () => {
+  const fetchProfile = React.useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
@@ -48,35 +46,41 @@ export default function FreelancerProfilePage() {
         setProfile(SAMPLE_PROFILE)
         setLastAction('Fetched sample profile (mock)')
       } else {
-        const data = await freelancerApi.getProfile()
+        const data = (await freelancerApi.getProfile()) as unknown as FreelancerProfile
         setProfile(data)
         setLastAction('Fetched profile from API')
       }
-    } catch (err: any) {
-      setError(err?.message || 'Không thể lấy profile')
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      setError(msg || 'Không thể lấy profile')
     } finally {
       setLoading(false)
     }
-  }
+  }, [useMock])
 
-  const handleSubmit = async (payload: any) => {
+  React.useEffect(() => {
+    fetchProfile()
+  }, [fetchProfile])
+
+  const handleSubmit = async (payload: UpdateFreelancerProfileRequest) => {
     setSaving(true)
     setLastAction(null)
     try {
       if (useMock) {
         await new Promise((r) => setTimeout(r, 700))
-        const merged = { ...(profile || {}), ...payload, updatedAt: new Date().toISOString() }
+        const merged = { ...(profile || {}), ...payload, updatedAt: new Date().toISOString() } as FreelancerProfile
         setProfile(merged)
         setLastAction('Saved profile locally (mock)')
-        return merged
+        return
       } else {
-        const res = await freelancerApi.updateProfile(payload as any)
+        const res = (await freelancerApi.updateProfile(payload)) as unknown as FreelancerProfile
         setProfile(res)
         setLastAction('Saved profile via API')
-        return res
+        return
       }
-    } catch (err: any) {
-      setLastAction('Save failed: ' + (err?.message || String(err)))
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      setLastAction('Save failed: ' + (msg || String(err)))
       throw err
     } finally {
       setSaving(false)

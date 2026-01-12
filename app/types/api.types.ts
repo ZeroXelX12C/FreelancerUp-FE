@@ -33,6 +33,9 @@ export interface LoginResponse {
 /**
  * Profile Freelancer
  */
+export interface ExperienceItem { role?: string; company?: string; years?: string }
+export interface EducationItem { school?: string; degree?: string; years?: string }
+
 export interface FreelancerProfile {
   id: string;
   fullName: string;
@@ -44,6 +47,8 @@ export interface FreelancerProfile {
   hourlyRate?: number;
   location?: string;
   experienceYears?: number;
+  experience?: ExperienceItem[];
+  education?: EducationItem[];
   updatedAt: string;
 }
 
