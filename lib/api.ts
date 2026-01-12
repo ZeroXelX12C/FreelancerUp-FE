@@ -27,7 +27,11 @@ let failedQueue: Array<{
 
 const processQueue = (error: unknown = null) => {
   failedQueue.forEach((prom) => {
-    error ? prom.reject(error) : prom.resolve(null);
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(null);
+    }
   });
   failedQueue = [];
 };
@@ -121,7 +125,10 @@ api.interceptors.response.use(
 // API functions có type
 // --------------------------
 export const authApi = {
-  login: (data: LoginRequest) => api.post<LoginResponse>('/api/auth/login', data),
+  login: async (data: LoginRequest): Promise<LoginResponse> => {
+    const res = await api.post<LoginResponse>('/api/auth/login', data);
+    return res as unknown as LoginResponse;
+  },
 };
 
 export const freelancerApi = {

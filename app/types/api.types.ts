@@ -53,3 +53,5 @@ export interface FreelancerProfile {
 export type UpdateFreelancerProfileRequest = Partial<
   Omit<FreelancerProfile, 'id' | 'email' | 'updatedAt'>
 >;
+
+export type User = LoginResponse['user'];
