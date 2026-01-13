@@ -41,7 +41,7 @@ export default function FreelancerProfilePage() {
     setError(null)
     try {
       if (useMock) {
-        // simulate fetch delay
+        // simulate fetch delays
         await new Promise((r) => setTimeout(r, 300))
         setProfile(SAMPLE_PROFILE)
         setLastAction('Fetched sample profile (mock)')
