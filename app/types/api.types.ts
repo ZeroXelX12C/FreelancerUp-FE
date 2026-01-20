@@ -11,6 +11,18 @@ export interface ApiErrorResponse {
 }
 
 /**
+ * Request Đăng ký (Thêm mới)
+ */
+export interface RegisterRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  role: 'FREELANCER' | 'CLIENT';
+}
+
+/**
  * Request & Response cho Auth
  */
 export interface LoginRequest {
@@ -20,21 +32,22 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   accessToken: string;
-  refreshToken?: string;     // nếu backend có refresh token
-  user: {
-    id: string;
-    email: string;
-    fullName: string;
-    role: 'FREELANCER' | 'CLIENT' | 'ADMIN';
-    avatar?: string;
-  };
+  refreshToken?: string;
+}
+
+export interface JwtPayload {
+  sub: string;       // userId
+  role: 'FREELANCER' | 'CLIENT' | 'ADMIN';
+  fullName: string;
+  iat: number;       // Issued At (Thời điểm tạo)
+  exp: number;       // Expiration (Thời điểm hết hạn)
 }
 
 /**
  * Profile Freelancer
  */
-export interface ExperienceItem { role?: string; company?: string; years?: string }
-export interface EducationItem { school?: string; degree?: string; years?: string }
+export interface ExperienceItem { position?: string; company?: string; years?: string }
+export interface EducationItem { schoolName?: string; degree?: string; fieldOfStudy?: string }
 
 export interface FreelancerProfile {
   id: string;
@@ -58,5 +71,3 @@ export interface FreelancerProfile {
 export type UpdateFreelancerProfileRequest = Partial<
   Omit<FreelancerProfile, 'id' | 'email' | 'updatedAt'>
 >;
-
-export type User = LoginResponse['user'];

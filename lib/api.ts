@@ -1,141 +1,76 @@
-// src/lib/api.ts
-import { ApiErrorResponse, FreelancerProfile, LoginRequest, LoginResponse, UpdateFreelancerProfileRequest } from '@/app/types/api.types';
-import axios, {
-  AxiosError,
-  AxiosInstance,
-  InternalAxiosRequestConfig,
-} from 'axios';
+import axios from 'axios';
+import { 
+  LoginRequest, 
+  LoginResponse, 
+  RegisterRequest,
+  FreelancerProfile,
+  UpdateFreelancerProfileRequest
+} from '@/app/types/api.types';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? ''
-
-const api: AxiosInstance = axios.create({
-  baseURL: BASE_URL,
-  timeout: 15000,
+// 1. Cấu hình Axios
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// --------------------------
-// Refresh token logic
-// --------------------------
-let isRefreshing = false;
-let failedQueue: Array<{
-  resolve: (value: unknown) => void;
-  reject: (reason?: unknown) => void;
-}> = [];
-
-const processQueue = (error: unknown = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(null);
-    }
-  });
-  failedQueue = [];
-};
-
-// Request interceptor - tự động gắn token
-api.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
+// 2. Request Interceptor: Gắn Token
+api.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
     const token = localStorage.getItem('accessToken');
-    if (token && config.headers) {
+    if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+  }
+  return config;
+});
 
-// Response interceptor
+// 3. Response Interceptor: Xử lý Token hết hạn
 api.interceptors.response.use(
-  // Thành công → chỉ trả về data
-  (response) => response.data,
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
 
-  async (error: AxiosError<ApiErrorResponse>) => {
-    const originalRequest = error.config as InternalAxiosRequestConfig & {
-      _retry?: boolean;
-    };
-
-    // Xử lý 401 - token hết hạn
+    // Nếu gặp lỗi 401 (Unauthorized) và chưa retry
     if (error.response?.status === 401 && !originalRequest._retry) {
-      if (isRefreshing) {
-        // Đang refresh → chờ trong hàng đợi
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then(() => api(originalRequest))
-          .catch((err) => Promise.reject(err));
-      }
-
-      originalRequest._retry = true;
-      isRefreshing = true;
-
-      try {
-        // Gọi refresh token (thay đổi endpoint nếu backend khác)
-        const refreshRes = await axios.post<{ accessToken: string }>(
-          `${BASE_URL}/api/auth/refresh`,
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('refreshToken')}`,
-            },
-          }
-        );
-
-        const { accessToken } = refreshRes.data;
-        localStorage.setItem('accessToken', accessToken);
-
-        // Cập nhật header
-        api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-        originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
-
-        processQueue();
-        isRefreshing = false;
-
-        return api(originalRequest);
-      } catch (refreshError) {
-        processQueue(refreshError);
-        isRefreshing = false;
-
-        // Refresh fail → logout
+      // Xóa token và reload trang (hoặc redirect về login)
+      if (typeof window !== 'undefined') {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-        window.location.href = '/login?sessionExpired=true';
-
-        return Promise.reject(refreshError);
+        window.location.href = '/login'; // Force redirect
       }
     }
-
-    // Lỗi chung
-    const errorData: ApiErrorResponse = {
-      status: error.response?.status || 500,
-      message:
-        error.response?.data?.message ||
-        error.message ||
-        'Đã có lỗi xảy ra. Vui lòng thử lại!',
-    };
-
-    return Promise.reject(errorData);
+    return Promise.reject(error);
   }
 );
 
-// --------------------------
-// API functions có type
-// --------------------------
 export const authApi = {
-  login: async (data: LoginRequest): Promise<LoginResponse> => {
-    const res = await api.post<LoginResponse>('/api/auth/login', data);
-    return res as unknown as LoginResponse;
+  login: async (credentials: LoginRequest): Promise<LoginResponse> => {
+    const { data } = await api.post<LoginResponse>('/auth/login', credentials);
+    return data;
   },
+
+  register: async (payload: RegisterRequest): Promise<LoginResponse> => {
+    const { data } = await api.post<LoginResponse>('/auth/register', payload);
+    return data;
+  },
+  
+  refreshToken: async (token: string) => {
+    const { data } = await api.post('/auth/refresh', { refreshToken: token });
+    return data;
+  }
 };
 
 export const freelancerApi = {
-  getProfile: () => api.get<FreelancerProfile>('/api/freelancers/profile'),
-
-  updateProfile: (data: UpdateFreelancerProfileRequest) =>
-    api.put<FreelancerProfile>('/api/freelancers/profile', data),
-};
+    getProfile: async (): Promise<FreelancerProfile> => {
+        const { data } = await api.get<FreelancerProfile>('/freelancers/profile');
+        return data;
+    },
+    updateProfile: async (payload: UpdateFreelancerProfileRequest): Promise<FreelancerProfile> => {
+        const { data } = await api.put<FreelancerProfile>('/freelancers/profile', payload);
+        return data;
+    }
+}
 
 export default api;
