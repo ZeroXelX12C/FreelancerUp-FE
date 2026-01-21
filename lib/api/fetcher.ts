@@ -95,7 +95,7 @@ export const fetcher = async (
 
     // Redirect to login if refresh fails
     if (typeof window !== 'undefined') {
-      window.location.href = '/(auth)/login';
+      window.location.href = '/login';
     }
     throw new Error('Session expired');
   }
