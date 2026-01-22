@@ -15,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { toast } from 'sonner';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -31,10 +32,13 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
+      toast.success('Đăng nhập thành công!');
       // Redirect based on role (will be refined after role selection)
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      const errorMessage = err.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
