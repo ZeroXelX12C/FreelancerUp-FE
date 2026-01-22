@@ -3,241 +3,117 @@
 ## 📋 Overview
 
 **Project**: FreelancerUp - Freelancer Marketplace Platform (Frontend)
-**Architecture**: Next.js 16 App Router + React 19 + TypeScript
-**Backend**: Spring Boot REST API (JWT authentication)
-**Timeline**: 6-7 weeks (aligned with Backend completion)
-**Status**: 🚧 Ready to Start
-**Last Updated**: 2026-01-21
+**Architecture**: Next.js 16 App Router + React 19 + TypeScript + TanStack Query
+**Backend**: Spring Boot REST API (JWT authentication, polyglot persistence)
+**Timeline**: 7-8 weeks (aligned with backend completion)
+**Status**: 🚧 In Development
+**Last Updated**: 2026-01-22
+
+---
+
+## 🎯 Backend Alignment
+
+The backend is **90% complete** with all 8 core modules implemented:
+- ✅ Authentication (JWT-based)
+- ✅ Client Management (profiles, statistics)
+- ✅ Project Management (CRUD, search, filters)
+- ✅ Bidding System (submit, accept, reject, withdraw)
+- ✅ Payment System (escrow, wallets, transactions)
+- ✅ Chat System (conversations, messages)
+- ✅ Contract Management (auto-create on bid acceptance)
+- ✅ Review System (ratings, comments)
+- 🚧 Redis Caching (stubbed, implementation pending)
+
+**Key Backend APIs Available**:
+- Swagger UI: `http://localhost:8081/swagger-ui/index.html`
+- Base URL: `http://localhost:8081/api/v1`
 
 ---
 
 ## 🎯 Implementation Phases
 
 ### Phase 0: Foundation Setup ⭐ Priority 0
-**Duration**: 1-2 days | **Week**: 1
+**Duration**: 1-2 days | **Week**: 1 | **Status**: ✅ Complete
 
 #### Objective
-Set up the foundational infrastructure for the frontend application.
+Set up foundational infrastructure.
+
+#### Completed Tasks
+- ✅ Next.js 16 project initialized
+- ✅ TypeScript configured with path aliases
+- ✅ Tailwind CSS 4 + shadcn/ui setup
+- ✅ TanStack Query installed
+- ✅ Basic auth pages (login/register UI)
+- ✅ Root layout with metadata
+
+#### Remaining Tasks
+- ⚠️ Environment variables configuration (`.env.local`)
+- ⚠️ TypeScript type definitions
+- ⚠️ API client with auth handling
+- ⚠️ React Query Provider setup
+- ⚠️ Global error handling
+- ⚠️ Toast notification system
+
+---
+
+### Phase 1: Authentication Module ⭐⭐⭐ Priority 1
+**Duration**: 2-3 days | **Week**: 1 | **Status**: 🚧 In Progress
+
+#### Objective
+Build complete authentication flow with JWT tokens.
+
+#### Package Structure
+```
+features/auth/
+├── services/
+│   └── authService.ts          # API calls to /auth/*
+├── hooks/
+│   ├── useAuth.ts              # Auth context & state
+│   └── useProtectedRoute.ts    # Protected route wrapper
+├── components/
+│   ├── LoginForm.tsx           # ✅ Already exists
+│   ├── RegisterForm.tsx        # ✅ Already exists
+│   └── ProtectedRoute.tsx
+└── types/
+    └── auth.ts                 # Auth-specific types
+```
+
+#### Backend Integration
+| Endpoint | Method | Auth | Purpose |
+|----------|--------|------|---------|
+| `/api/v1/auth/login` | POST | None | Login with email/password |
+| `/api/v1/auth/register` | POST | None | Register new user |
+| `/api/v1/auth/logout` | POST | Bearer | Logout (invalidate tokens) |
+| `/api/v1/auth/refresh` | POST | None | Refresh access token |
+| `/api/v1/auth/me` | GET | Bearer | Get current user profile |
 
 #### Tasks
 
-##### 0.1 Environment Configuration
-**File**: `.env.local`
-
-```bash
-# Backend API URL
-NEXT_PUBLIC_API_URL=http://localhost:8081/api/v1
-
-# Application URL
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-
-# WebSocket URL (for chat - optional for MVP)
-NEXT_PUBLIC_WS_URL=ws://localhost:8081/ws
-
-# Feature flags
-NEXT_PUBLIC_ENABLE_CHAT=true
-NEXT_PUBLIC_ENABLE_PAYMENTS=true
-```
-
-##### 0.2 TypeScript Type Definitions
-**File**: `src/types/api.ts`
-
-```typescript
-// API Response wrapper
-interface ApiResponse<T> {
-  data: T;
-  message?: string;
-  errors?: Record<string, string[]>;
-}
-
-// Pagination
-interface PageResponse<T> {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-}
-
-// User types
-interface User {
-  id: string;
-  email: string;
-  fullName: string;
-  avatar?: string;
-  role: 'USER' | 'CLIENT' | 'FREELANCER';
-  isActive: boolean;
-  createdAt: string;
-}
-
-interface Client {
-  id: string;
-  companyName: string;
-  industry?: string;
-  companySize?: string;
-  totalSpent: number;
-  postedProjects: number;
-}
-
-interface Freelancer {
-  id: string;
-  userId: string;
-  bio?: string;
-  hourlyRate: number;
-  availability: 'AVAILABLE' | 'BUSY' | 'OFFLINE';
-  totalEarned: number;
-  completedProjects: number;
-  successRate: number;
-  skills: FreelancerSkill[];
-}
-
-interface FreelancerSkill {
-  skillId: string;
-  name: string;
-  proficiencyLevel: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
-  yearsOfExperience?: number;
-}
-
-// Project types
-interface Project {
-  id: string;
-  clientId: string;
-  freelancerId?: string;
-  title: string;
-  description: string;
-  requirements?: string;
-  skills: string[];
-  budget: ProjectBudget;
-  duration?: number;
-  status: 'OPEN' | 'IN_PROGRESS' | 'COMPLETED';
-  type: 'FIXED_PRICE' | 'HOURLY';
-  deadline?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface ProjectBudget {
-  minAmount: number;
-  maxAmount: number;
-  currency: string;
-  isNegotiable: boolean;
-}
-
-// Bid types
-interface Bid {
-  id: string;
-  projectId: string;
-  freelancerId: string;
-  proposal: string;
-  price: number;
-  estimatedDuration?: number;
-  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
-  submittedAt: string;
-  respondedAt?: string;
-}
-
-// Payment types
-interface Wallet {
-  id: string;
-  userId: string;
-  balance: number;
-  escrowBalance: number;
-  totalEarned: number;
-  currency: string;
-}
-
-interface Transaction {
-  id: string;
-  type: 'CREDIT' | 'DEBIT' | 'ESCROW_HOLD' | 'ESCROW_RELEASE';
-  status: 'PENDING' | 'COMPLETED' | 'FAILED';
-  amount: number;
-  description?: string;
-  balanceBefore: number;
-  balanceAfter: number;
-  createdAt: string;
-}
-
-interface Payment {
-  id: string;
-  projectId: string;
-  fromUserId: string;
-  toUserId: string;
-  amount: number;
-  fee: number;
-  netAmount: number;
-  status: 'PENDING' | 'ESCROW_HOLD' | 'RELEASED' | 'COMPLETED' | 'REFUNDED';
-  isEscrow: boolean;
-  createdAt: string;
-}
-
-// Chat types
-interface Message {
-  id: string;
-  conversationId: string;
-  projectId: string;
-  fromUserId: string;
-  toUserId: string;
-  content: string;
-  isRead: boolean;
-  readAt?: string;
-  createdAt: string;
-}
-
-interface Conversation {
-  id: string;
-  projectId: string;
-  participantIds: string[];
-  lastMessageAt?: string;
-  lastMessagePreview?: string;
-  isActive: boolean;
-}
-
-// Review types
-interface Review {
-  id: string;
-  projectId: string;
-  fromUserId: string;
-  toUserId: string;
-  rating: number;
-  comment?: string;
-  isVisible: boolean;
-  createdAt: string;
-}
-```
-
-##### 0.3 API Client Setup
+##### 1.1 Complete API Client Setup
 **File**: `src/lib/api/fetcher.ts`
 
 ```typescript
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api/v1';
 
-// Get access token from localStorage
-const getAccessToken = (): string | null => {
+// Token management
+export const getAccessToken = (): string | null => {
   if (typeof window === 'undefined') return null;
   return localStorage.getItem('access_token');
 };
 
-// Get refresh token from localStorage
-const getRefreshToken = (): string | null => {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('refresh_token');
-};
-
-// Set tokens
 export const setTokens = (accessToken: string, refreshToken: string): void => {
   if (typeof window === 'undefined') return;
   localStorage.setItem('access_token', accessToken);
   localStorage.setItem('refresh_token', refreshToken);
 };
 
-// Clear tokens
 export const clearTokens = (): void => {
   if (typeof window === 'undefined') return;
   localStorage.removeItem('access_token');
   localStorage.removeItem('refresh_token');
 };
 
-// Fetcher with auth
+// Authenticated fetcher with auto-refresh
 export const fetcher = async (url: string, options: RequestInit = {}) => {
   const token = getAccessToken();
 
@@ -255,23 +131,19 @@ export const fetcher = async (url: string, options: RequestInit = {}) => {
     headers,
   });
 
-  // Handle 401 Unauthorized - try refresh token
+  // Handle 401 - try refresh token
   if (response.status === 401) {
     const refreshed = await refreshAccessToken();
     if (refreshed) {
-      // Retry original request with new token
       const newToken = getAccessToken();
       if (newToken) {
         headers['Authorization'] = `Bearer ${newToken}`;
-        return fetch(`${API_BASE_URL}${url}`, {
-          ...options,
-          headers,
-        });
+        return fetch(`${API_BASE_URL}${url}`, { ...options, headers });
       }
     }
     // Redirect to login if refresh fails
     if (typeof window !== 'undefined') {
-      window.location.href = '/(auth)/login';
+      window.location.href = '/login';
     }
     throw new Error('Session expired');
   }
@@ -284,9 +156,8 @@ export const fetcher = async (url: string, options: RequestInit = {}) => {
   return response.json();
 };
 
-// Refresh access token
 const refreshAccessToken = async (): Promise<boolean> => {
-  const refreshToken = getRefreshToken();
+  const refreshToken = localStorage.getItem('refresh_token');
   if (!refreshToken) return false;
 
   try {
@@ -310,146 +181,11 @@ const refreshAccessToken = async (): Promise<boolean> => {
 };
 ```
 
-##### 0.4 React Query / SWR Setup
-**File**: `src/lib/api/query-client.tsx`
-
-```typescript
-'use client';
-
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-
-// Create QueryClient with optimized defaults
-const makeQueryClient = () => {
-  return new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 60 * 1000, // 1 minute
-        gcTime: 5 * 60 * 1000, // 5 minutes (was cacheTime)
-        retry: 1,
-        refetchOnWindowFocus: false,
-      },
-    },
-  });
-};
-
-let browserQueryClient: QueryClient | undefined = undefined;
-
-const getQueryClient = () => {
-  if (typeof window === 'undefined') {
-    // Server: always create a new client
-    return makeQueryClient();
-  }
-  // Browser: create client once and reuse
-  if (!browserQueryClient) {
-    browserQueryClient = makeQueryClient();
-  }
-  return browserQueryClient;
-};
-
-export function QueryProvider({ children }: { children: React.ReactNode }) {
-  const queryClient = getQueryClient();
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-      {process.env.NODE_ENV === 'development' && (
-        <ReactQueryDevtools initialIsOpen={false} />
-      )}
-    </QueryClientProvider>
-  );
-}
-```
-
-##### 0.5 Global Error Handling
-**File**: `app/error.tsx`
-
-```typescript
-'use client';
-
-import { useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-
-export default function Error({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
-  useEffect(() => {
-    console.error('Application error:', error);
-  }, [error]);
-
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold mb-4">Something went wrong!</h2>
-        <p className="text-muted-foreground mb-6">{error.message}</p>
-        <Button onClick={reset}>Try again</Button>
-      </div>
-    </div>
-  );
-}
-```
-
-##### 0.6 Loading UI
-**File**: `app/loading.tsx`
-
-```typescript
-export default function Loading() {
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
-    </div>
-  );
-}
-```
-
-#### Deliverables
-- ✅ Environment variables configured
-- ✅ TypeScript types defined
-- ✅ API client with auth handling
-- ✅ React Query setup
-- ✅ Error and loading boundaries
-
----
-
-### Phase 1: Authentication Module ⭐⭐⭐ Priority 1
-**Duration**: 2-3 days | **Week**: 1
-
-#### Objective
-Build complete authentication flow with JWT tokens.
-
-#### Package Structure
-```
-app/(auth)/
-├── login/
-│   └── page.tsx
-├── register/
-│   └── page.tsx
-└── layout.tsx
-
-features/auth/
-├── hooks/
-│   ├── useAuth.ts
-│   └── useProtectedRoute.ts
-├── services/
-│   └── authService.ts
-└── components/
-    ├── LoginForm.tsx
-    ├── RegisterForm.tsx
-    └── ProtectedRoute.tsx
-```
-
-#### Tasks
-
-##### 1.1 Authentication Service
+##### 1.2 Auth Service
 **File**: `features/auth/services/authService.ts`
 
 ```typescript
 import { fetcher, setTokens, clearTokens } from '@/lib/api/fetcher';
-import type { User } from '@/types/api';
 
 interface LoginRequest {
   email: string;
@@ -469,64 +205,46 @@ interface AuthResponse {
 }
 
 export const authService = {
-  // Login
   async login(data: LoginRequest): Promise<AuthResponse> {
     const response = await fetcher('/auth/login', {
       method: 'POST',
       body: JSON.stringify(data),
     });
-
     setTokens(response.accessToken, response.refreshToken);
     return response;
   },
 
-  // Register
   async register(data: RegisterRequest): Promise<AuthResponse> {
     const response = await fetcher('/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
     });
-
     setTokens(response.accessToken, response.refreshToken);
     return response;
   },
 
-  // Logout
   async logout(): Promise<void> {
     try {
       await fetcher('/auth/logout', { method: 'POST' });
     } finally {
       clearTokens();
-      window.location.href = '/(auth)/login';
+      window.location.href = '/login';
     }
   },
 
-  // Get current user
   async getCurrentUser(): Promise<User> {
     return fetcher('/auth/me');
-  },
-
-  // Refresh token
-  async refreshToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
-    const response = await fetcher('/auth/refresh', {
-      method: 'POST',
-      body: JSON.stringify({ refreshToken }),
-    });
-
-    setTokens(response.accessToken, response.refreshToken);
-    return response;
   },
 };
 ```
 
-##### 1.2 useAuth Hook
+##### 1.3 Auth Context & Hook
 **File**: `features/auth/hooks/useAuth.ts`
 
 ```typescript
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import type { User } from '@/types/api';
 import { authService } from '../services/authService';
 
 interface AuthContextType {
@@ -545,27 +263,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in on mount
-    const checkAuth = async () => {
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const userData = await authService.getCurrentUser();
-        setUser(userData);
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        localStorage.removeItem('access_token');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     checkAuth();
   }, []);
+
+  const checkAuth = async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const userData = await authService.getCurrentUser();
+      setUser(userData);
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      localStorage.removeItem('access_token');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const login = async (email: string, password: string) => {
     const response = await authService.login({ email, password });
@@ -607,170 +324,38 @@ export const useAuth = () => {
 };
 ```
 
-##### 1.3 Login Page
-**File**: `app/(auth)/login/page.tsx`
+##### 1.4 Update Root Layout
+**File**: `app/layout.tsx`
 
 ```typescript
-'use client';
+import { QueryProvider } from '@/lib/api/query-client';
+import { AuthProvider } from '@/features/auth/hooks/useAuth';
+import { Toaster } from '@/components/ui/toaster';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useAuth } from '@/features/auth/hooks/useAuth';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-
-export default function LoginPage() {
-  const router = useRouter();
-  const { login } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      await login(email, password);
-
-      // Redirect based on role
-      // This will be handled after role selection is implemented
-      router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message || 'Login failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Welcome back</CardTitle>
-          <CardDescription>Sign in to your FreelancerUp account</CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            {error && (
-              <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
-                {error}
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="name@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-          </CardContent>
-
-          <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign in'}
-            </Button>
-
-            <p className="text-sm text-muted-foreground">
-              Don't have an account?{' '}
-              <Link href="/(auth)/register" className="text-primary hover:underline">
-                Sign up
-              </Link>
-            </p>
-          </CardFooter>
-        </form>
-      </Card>
-    </div>
+    <html lang="en">
+      <body>
+        <QueryProvider>
+          <AuthProvider>
+            {children}
+            <Toaster />
+          </AuthProvider>
+        </QueryProvider>
+      </body>
+    </html>
   );
-}
-```
-
-##### 1.4 Protected Route Component
-**File**: `features/auth/components/ProtectedRoute.tsx`
-
-```typescript
-'use client';
-
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '../hooks/useAuth';
-
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-  requiredRoles?: Array<'CLIENT' | 'FREELANCER'>;
-}
-
-export function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps) {
-  const { user, loading, isAuthenticated } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading) {
-      if (!isAuthenticated) {
-        router.push('/(auth)/login');
-        return;
-      }
-
-      if (requiredRoles && user && !requiredRoles.includes(user.role as any)) {
-        router.push('/unauthorized');
-        return;
-      }
-    }
-  }, [loading, isAuthenticated, user, requiredRoles, router]);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!isAuthenticated) {
-    return null;
-  }
-
-  if (requiredRoles && user && !requiredRoles.includes(user.role as any)) {
-    return null;
-  }
-
-  return <>{children}</>;
 }
 ```
 
 #### Deliverables
 - ✅ Login page with form validation
 - ✅ Register page
-- ✅ Auth context and hooks
-- ✅ Protected route wrapper
-- ✅ JWT token management
-- ✅ Auto token refresh on 401
-
-#### API Integration
-| Endpoint | Method | Auth |
-|----------|--------|------|
-| `/api/v1/auth/login` | POST | None |
-| `/api/v1/auth/register` | POST | None |
-| `/api/v1/auth/logout` | POST | Bearer |
-| `/api/v1/auth/refresh` | POST | None |
-| `/api/v1/auth/me` | GET | Bearer |
+- ⚠️ Auth context and hooks (needs completion)
+- ⚠️ Protected route wrapper
+- ✅ JWT token management (in auth pages)
+- ⚠️ Auto token refresh on 401
+- ⚠️ Root layout integration
 
 ---
 
@@ -778,7 +363,7 @@ export function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps)
 **Duration**: 2-3 days | **Week**: 2
 
 #### Objective
-Build client-specific features: registration, profile management, statistics.
+Build client-specific features after user is logged in.
 
 #### Package Structure
 ```
@@ -786,7 +371,8 @@ features/client/
 ├── services/
 │   └── clientService.ts
 ├── hooks/
-│   └── useClient.ts
+│   ├── useClientProfile.ts
+│   └── useClientStats.ts
 └── components/
     ├── ClientRegistrationForm.tsx
     ├── ClientProfileView.tsx
@@ -794,67 +380,22 @@ features/client/
     └── EditClientProfileForm.tsx
 ```
 
-#### Tasks
+#### Backend Integration
+| Endpoint | Method | Auth | Purpose |
+|----------|--------|------|---------|
+| `/api/v1/clients/register` | POST | USER | Register as client |
+| `/api/v1/clients/profile` | GET | CLIENT | Get client profile |
+| `/api/v1/clients/profile` | PUT | CLIENT | Update profile |
+| `/api/v1/clients/stats` | GET | CLIENT | Get statistics |
+| `/api/v1/clients/profile` | DELETE | CLIENT | Delete profile |
 
-##### 2.1 Client Service
-**File**: `features/client/services/clientService.ts`
+#### Key Features
+1. **Client Registration Flow** - After account creation, complete company info
+2. **Profile Management** - View/edit company details
+3. **Statistics Dashboard** - Total spent, projects posted, active projects
 
-```typescript
-import { fetcher } from '@/lib/api/fetcher';
-import type { Client, ClientProfileResponse, ClientStatsResponse } from '@/types/api';
-
-interface RegisterClientRequest {
-  companyName: string;
-  industry?: string;
-  companySize?: string;
-  paymentMethods?: any[];
-}
-
-interface UpdateClientProfileRequest {
-  companyName?: string;
-  industry?: string;
-  companySize?: string;
-  paymentMethods?: any[];
-}
-
-export const clientService = {
-  // Register as client
-  async register(data: RegisterClientRequest): Promise<Client> {
-    return fetcher('/clients/register', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  // Get client profile
-  async getProfile(): Promise<ClientProfileResponse> {
-    return fetcher('/clients/profile');
-  },
-
-  // Update client profile
-  async updateProfile(data: UpdateClientProfileRequest): Promise<ClientProfileResponse> {
-    return fetcher('/clients/profile', {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  // Get client statistics
-  async getStats(): Promise<ClientStatsResponse> {
-    return fetcher('/clients/stats');
-  },
-
-  // Delete client profile
-  async deleteProfile(): Promise<void> {
-    return fetcher('/clients/profile', {
-      method: 'DELETE',
-    });
-  },
-};
-```
-
-##### 2.2 Client Registration Flow
-**File**: `app/(auth)/register/client/page.tsx`
+#### Client Registration Page
+**File**: `app/register/client/page.tsx`
 
 ```typescript
 'use client';
@@ -862,120 +403,24 @@ export const clientService = {
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useMutation } from '@tanstack/react-query';
 import { clientService } from '@/features/client/services/clientService';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 
 export default function ClientRegisterPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
-  const [formData, setFormData] = useState({
-    companyName: '',
-    industry: '',
-    companySize: '',
+  const mutation = useMutation({
+    mutationFn: (data: RegisterClientRequest) => clientService.register(data),
+    onSuccess: () => {
+      // Reload to get updated role
+      window.location.href = '/dashboard/client';
+    },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      await clientService.register(formData);
-
-      // Update user role will be handled by backend
-      // Reload user data
-      window.location.href = '/dashboard/client';
-    } catch (err: any) {
-      setError(err.message || 'Registration failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="container max-w-2xl py-10">
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Register as Client</h1>
-          <p className="text-muted-foreground">
-            Tell us about your company to start posting projects
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
-            <div className="p-4 text-sm text-destructive bg-destructive/10 rounded-md">
-              {error}
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <Label htmlFor="companyName">Company Name *</Label>
-            <Input
-              id="companyName"
-              value={formData.companyName}
-              onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-              required
-              minLength={2}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="industry">Industry</Label>
-            <Input
-              id="industry"
-              value={formData.industry}
-              onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-              placeholder="e.g. Technology, Finance, Healthcare"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="companySize">Company Size</Label>
-            <Select
-              value={formData.companySize}
-              onValueChange={(value) => setFormData({ ...formData, companySize: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select company size" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1-10">1-10 employees</SelectItem>
-                <SelectItem value="11-50">11-50 employees</SelectItem>
-                <SelectItem value="51-200">51-200 employees</SelectItem>
-                <SelectItem value="201-500">201-500 employees</SelectItem>
-                <SelectItem value="500+">500+ employees</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Registering...' : 'Complete Registration'}
-          </Button>
-        </form>
-      </div>
-    </div>
-  );
+  // Form implementation...
 }
 ```
-
-#### Deliverables
-- ✅ Client registration form
-- ✅ Client profile page
-- ✅ Client stats dashboard
-- ✅ Edit profile functionality
 
 ---
 
@@ -983,7 +428,7 @@ export default function ClientRegisterPage() {
 **Duration**: 2-3 days | **Week**: 2
 
 #### Objective
-Build freelancer-specific features: profile, skills, experience, education.
+Build freelancer-specific features.
 
 #### Package Structure
 ```
@@ -991,7 +436,8 @@ features/freelancer/
 ├── services/
 │   └── freelancerService.ts
 ├── hooks/
-│   └── useFreelancer.ts
+│   ├── useFreelancerProfile.ts
+│   └── useFreelancerStats.ts
 └── components/
     ├── FreelancerRegistrationForm.tsx
     ├── FreelancerProfileView.tsx
@@ -1000,9 +446,17 @@ features/freelancer/
     └── EducationEditor.tsx
 ```
 
+#### Backend Integration
+| Endpoint | Method | Auth | Purpose |
+|----------|--------|------|---------|
+| `/api/v1/freelancers/register` | POST | USER | Register as freelancer |
+| `/api/v1/freelancers/profile` | GET | FREELANCER | Get profile |
+| `/api/v1/freelancers/profile` | PUT | FREELANCER | Update profile |
+| `/api/v1/freelancers/{id}` | GET | None | View public profile |
+
 #### Key Features
-1. Extended profile with bio, hourly rate
-2. Skills management with proficiency levels
+1. Extended profile (bio, hourly rate, availability)
+2. Skills management (name, proficiency, experience)
 3. Work experience history
 4. Education background
 5. Portfolio (optional for MVP)
@@ -1013,7 +467,7 @@ features/freelancer/
 **Duration**: 3-4 days | **Week**: 2-3
 
 #### Objective
-Build project listing, search, and detail pages with advanced filtering.
+Build project listing, search, and detail pages.
 
 #### Package Structure
 ```
@@ -1022,7 +476,8 @@ features/projects/
 │   └── projectService.ts
 ├── hooks/
 │   ├── useProjects.ts
-│   └── useProjectDetail.ts
+│   ├── useProjectDetail.ts
+│   └── useCreateProject.ts
 └── components/
     ├── ProjectCard.tsx
     ├── ProjectGrid.tsx
@@ -1030,291 +485,36 @@ features/projects/
     ├── ProjectSearchBar.tsx
     ├── ProjectFilters.tsx
     ├── ProjectDetailPage.tsx
-    └── BudgetBadge.tsx
+    └── CreateProjectForm.tsx
 ```
 
-#### Tasks
+#### Backend Integration
+| Endpoint | Method | Auth | Purpose |
+|----------|--------|------|---------|
+| `/api/v1/projects/search` | GET | None | Search/filter projects |
+| `/api/v1/projects/{id}` | GET | None | Get project details |
+| `/api/v1/projects` | POST | CLIENT | Create project |
+| `/api/v1/projects/{id}/status` | PATCH | CLIENT/FREELANCER | Update status |
+| `/api/v1/projects/{id}` | DELETE | CLIENT | Delete project |
 
-##### 4.1 Project Service
-**File**: `features/projects/services/projectService.ts`
+#### Key Features
+1. **Project Listing** - Paginated list with filters
+2. **Advanced Search** - By keyword, skills, budget, type, status
+3. **Project Detail** - Full project info with client details
+4. **Create Project** - Form for clients to post projects
 
-```typescript
-import { fetcher } from '@/lib/api/fetcher';
-import type { Project, PageResponse } from '@/types/api';
-
-interface ProjectSearchRequest {
-  keyword?: string;
-  skills?: string[];
-  minBudget?: number;
-  maxBudget?: number;
-  type?: 'FIXED_PRICE' | 'HOURLY';
-  statuses?: ('OPEN' | 'IN_PROGRESS' | 'COMPLETED')[];
-  sortBy?: string;
-  sortDirection?: 'ASC' | 'DESC';
-  page?: number;
-  size?: number;
-}
-
-interface CreateProjectRequest {
-  title: string;
-  description: string;
-  requirements?: string;
-  skills: string[];
-  budget: {
-    minAmount: number;
-    maxAmount: number;
-    currency: string;
-    isNegotiable: boolean;
-  };
-  duration?: number;
-  type: 'FIXED_PRICE' | 'HOURLY';
-  deadline?: string;
-}
-
-export const projectService = {
-  // Search projects
-  async search(params: ProjectSearchRequest): Promise<PageResponse<Project>> {
-    const queryParams = new URLSearchParams();
-
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        if (Array.isArray(value)) {
-          value.forEach(v => queryParams.append(key, v.toString()));
-        } else {
-          queryParams.set(key, value.toString());
-        }
-      }
-    });
-
-    return fetcher(`/projects/search?${queryParams.toString()}`);
-  },
-
-  // Get project detail
-  async getDetail(id: string): Promise<Project> {
-    return fetcher(`/projects/${id}`);
-  },
-
-  // Create project (client only)
-  async create(data: CreateProjectRequest): Promise<Project> {
-    return fetcher('/projects', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  // Update project status
-  async updateStatus(id: string, status: 'OPEN' | 'IN_PROGRESS' | 'COMPLETED'): Promise<Project> {
-    return fetcher(`/projects/${id}/status?status=${status}`, {
-      method: 'PATCH',
-    });
-  },
-
-  // Delete project (client only)
-  async delete(id: string): Promise<void> {
-    return fetcher(`/projects/${id}`, {
-      method: 'DELETE',
-    });
-  },
-};
-```
-
-##### 4.2 Project List Page with Filters
+#### Project List Page (Server Component)
 **File**: `app/projects/page.tsx`
 
 ```typescript
-'use client';
-
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { projectService } from '@/features/projects/services/projectService';
+import { useProjects } from '@/features/projects/hooks/useProjects';
 import { ProjectCard } from '@/features/projects/components/ProjectCard';
 import { ProjectFilters } from '@/features/projects/components/ProjectFilters';
-import { ProjectSearchBar } from '@/features/projects/components/ProjectSearchBar';
-import { Button } from '@/components/ui/button';
 
 export default function ProjectsPage() {
-  const [filters, setFilters] = useState({
-    keyword: '',
-    skills: [] as string[],
-    minBudget: undefined as number | undefined,
-    maxBudget: undefined as number | undefined,
-    type: undefined as 'FIXED_PRICE' | 'HOURLY' | undefined,
-    page: 0,
-    size: 20,
-  });
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['projects', filters],
-    queryFn: () => projectService.search(filters),
-  });
-
-  return (
-    <div className="container py-10">
-      <div className="space-y-8">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold">Find Projects</h1>
-          <p className="text-muted-foreground">
-            Browse opportunities and submit your proposals
-          </p>
-        </div>
-
-        {/* Search */}
-        <ProjectSearchBar
-          value={filters.keyword}
-          onChange={(keyword) => setFilters({ ...filters, keyword, page: 0 })}
-        />
-
-        <div className="grid lg:grid-cols-4 gap-8">
-          {/* Filters Sidebar */}
-          <aside className="lg:col-span-1">
-            <ProjectFilters
-              filters={filters}
-              onChange={setFilters}
-            />
-          </aside>
-
-          {/* Project List */}
-          <div className="lg:col-span-3 space-y-6">
-            {isLoading ? (
-              <div className="text-center py-10">Loading projects...</div>
-            ) : error ? (
-              <div className="text-center py-10 text-destructive">
-                Failed to load projects
-              </div>
-            ) : data?.content.length === 0 ? (
-              <div className="text-center py-10 text-muted-foreground">
-                No projects found matching your criteria
-              </div>
-            ) : (
-              <>
-                <div className="grid md:grid-cols-2 gap-6">
-                  {data?.content.map((project) => (
-                    <ProjectCard key={project.id} project={project} />
-                  ))}
-                </div>
-
-                {/* Pagination */}
-                {data && data.totalPages > 1 && (
-                  <div className="flex justify-center gap-2">
-                    <Button
-                      variant="outline"
-                      disabled={filters.page === 0}
-                      onClick={() => setFilters({ ...filters, page: filters.page - 1 })}
-                    >
-                      Previous
-                    </Button>
-                    <span className="flex items-center px-4">
-                      Page {filters.page + 1} of {data.totalPages}
-                    </span>
-                    <Button
-                      variant="outline"
-                      disabled={filters.page >= data.totalPages - 1}
-                      onClick={() => setFilters({ ...filters, page: filters.page + 1 })}
-                    >
-                      Next
-                    </Button>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  // Implementation with TanStack Query
 }
 ```
-
-##### 4.3 Project Card Component
-**File**: `features/projects/components/ProjectCard.tsx`
-
-```typescript
-'use client';
-
-import Link from 'next/link';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { type Project } from '@/types/api';
-import { formatDistanceToNow } from 'date-fns';
-
-interface ProjectCardProps {
-  project: Project;
-}
-
-export function ProjectCard({ project }: ProjectCardProps) {
-  const timeAgo = formatDistanceToNow(new Date(project.createdAt), { addSuffix: true });
-
-  return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader>
-        <div className="flex items-start justify-between gap-4">
-          <Link
-            href={`/projects/${project.id}`}
-            className="font-semibold hover:text-primary line-clamp-2"
-          >
-            {project.title}
-          </Link>
-          <Badge variant={project.status === 'OPEN' ? 'default' : 'secondary'}>
-            {project.status}
-          </Badge>
-        </div>
-        <p className="text-sm text-muted-foreground line-clamp-2">
-          {project.description}
-        </p>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        {/* Budget */}
-        <div>
-          <span className="text-sm font-medium">
-            ${project.budget.minAmount} - ${project.budget.maxAmount}
-          </span>
-          <span className="text-xs text-muted-foreground ml-2">
-            {project.budget.isNegotiable ? '(Negotiable)' : '(Fixed)'}
-          </span>
-        </div>
-
-        {/* Skills */}
-        <div className="flex flex-wrap gap-2">
-          {project.skills.slice(0, 4).map((skill) => (
-            <Badge key={skill} variant="outline" className="text-xs">
-              {skill}
-            </Badge>
-          ))}
-          {project.skills.length > 4 && (
-            <Badge variant="outline" className="text-xs">
-              +{project.skills.length - 4} more
-            </Badge>
-          )}
-        </div>
-
-        {/* Metadata */}
-        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-          <span>{project.type === 'FIXED_PRICE' ? 'Fixed Price' : 'Hourly'}</span>
-          {project.duration && <span>{project.duration} days</span>}
-          <span>Posted {timeAgo}</span>
-        </div>
-      </CardContent>
-
-      <CardFooter>
-        <Link href={`/projects/${project.id}`} className="w-full">
-          <Button variant="outline" className="w-full">
-            View Details
-          </Button>
-        </Link>
-      </CardFooter>
-    </Card>
-  );
-}
-```
-
-#### Deliverables
-- ✅ Project listing with search
-- ✅ Advanced filters (budget, skills, type)
-- ✅ Project detail page
-- ✅ Pagination
-- ✅ Responsive design
 
 ---
 
@@ -1322,7 +522,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
 **Duration**: 2-3 days | **Week**: 3-4
 
 #### Objective
-Build bid submission and management for freelancers.
+Build bid submission and management.
 
 #### Package Structure
 ```
@@ -1331,126 +531,31 @@ features/bids/
 │   └── bidService.ts
 ├── hooks/
 │   ├── useBids.ts
-│   └── useMyBids.ts
+│   ├── useMyBids.ts
+│   └── useSubmitBid.ts
 └── components/
     ├── BidForm.tsx
     ├── BidList.tsx
     ├── BidCard.tsx
-    └── BidStatusBadge.tsx
+    ├── BidStatusBadge.tsx
+    └── AcceptRejectButtons.tsx
 ```
+
+#### Backend Integration
+| Endpoint | Method | Auth | Purpose |
+|----------|--------|------|---------|
+| `/api/v1/projects/{projectId}/bids` | POST | FREELANCER | Submit bid |
+| `/api/v1/projects/{projectId}/bids` | GET | CLIENT | List bids for project |
+| `/api/v1/bids/{id}/accept` | PATCH | CLIENT | Accept bid |
+| `/api/v1/bids/{id}/reject` | PATCH | CLIENT | Reject bid |
+| `/api/v1/bids/{id}/withdraw` | DELETE | FREELANCER | Withdraw bid |
 
 #### Key Features
-1. Submit bid on project
-2. View bid status
-3. Edit/withdraw pending bids
-4. View all bids for own projects (client)
-5. Accept/reject bids (client)
-
-#### Bid Form Component
-**File**: `features/bids/components/BidForm.tsx`
-
-```typescript
-'use client';
-
-import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { bidService } from '@/features/bids/services/bidService';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-interface BidFormProps {
-  projectId: string;
-  projectBudget: { minAmount: number; maxAmount: number };
-  onSuccess?: () => void;
-}
-
-export function BidForm({ projectId, projectBudget, onSuccess }: BidFormProps) {
-  const queryClient = useQueryClient();
-  const [proposal, setProposal] = useState('');
-  const [price, setPrice] = useState('');
-  const [estimatedDuration, setEstimatedDuration] = useState('');
-
-  const submitBid = useMutation({
-    mutationFn: () => bidService.submit(projectId, {
-      proposal,
-      price: parseFloat(price),
-      estimatedDuration: estimatedDuration ? parseInt(estimatedDuration) : undefined,
-    }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bids', projectId] });
-      queryClient.invalidateQueries({ queryKey: ['project', projectId] });
-      onSuccess?.();
-    },
-  });
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Submit Your Proposal</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={(e) => { e.preventDefault(); submitBid.mutate(); }} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="proposal">Proposal *</Label>
-            <Textarea
-              id="proposal"
-              placeholder="Explain why you're the best fit for this project..."
-              value={proposal}
-              onChange={(e) => setProposal(e.target.value)}
-              rows={5}
-              required
-              minLength={50}
-            />
-            <p className="text-xs text-muted-foreground">
-              Minimum 50 characters
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="price">Your Bid ($) *</Label>
-            <Input
-              id="price"
-              type="number"
-              placeholder="Enter your bid amount"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              min={projectBudget.minAmount}
-              max={projectBudget.maxAmount}
-              required
-            />
-            <p className="text-xs text-muted-foreground">
-              Project budget: ${projectBudget.minAmount} - ${projectBudget.maxAmount}
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="duration">Estimated Duration (days)</Label>
-            <Input
-              id="duration"
-              type="number"
-              placeholder="e.g. 7"
-              value={estimatedDuration}
-              onChange={(e) => setEstimatedDuration(e.target.value)}
-              min={1}
-            />
-          </div>
-
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={submitBid.isPending}
-          >
-            {submitBid.isPending ? 'Submitting...' : 'Submit Proposal'}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
-  );
-}
-```
+1. Submit bid with proposal, price, duration
+2. View all bids for own projects (client)
+3. Accept/reject bids (client)
+4. Edit/withdraw pending bids (freelancer)
+5. Real-time bid status updates
 
 ---
 
@@ -1467,7 +572,8 @@ features/payments/
 │   └── paymentService.ts
 ├── hooks/
 │   ├── useWallet.ts
-│   └── useTransactions.ts
+│   ├── useTransactions.ts
+│   └── useEscrow.ts
 └── components/
     ├── WalletBalanceCard.tsx
     ├── TransactionList.tsx
@@ -1476,12 +582,31 @@ features/payments/
     └── PaymentStatusBadge.tsx
 ```
 
+#### Backend Integration
+| Endpoint | Method | Auth | Purpose |
+|----------|--------|------|---------|
+| `/api/v1/wallets` | GET | USER | Get wallet balance |
+| `/api/v1/wallets/transactions` | GET | USER | Transaction history |
+| `/api/v1/payments/escrow/fund` | POST | CLIENT | Fund escrow |
+| `/api/v1/payments/escrow/release` | POST | CLIENT | Release payment |
+| `/api/v1/payments/{projectId}` | GET | USER | Get payment details |
+
 #### Key Features
-1. View wallet balance
-2. Transaction history
-3. Fund escrow (client)
-4. Release payment (client)
-5. View escrow status
+1. View wallet balance (available, escrow, total earned)
+2. Transaction history with pagination
+3. Fund escrow for project (client)
+4. Release payment to freelancer (client)
+5. Escrow status tracking
+
+#### Important Payment Flow
+```
+1. Client posts project → status: OPEN
+2. Freelancer submits bid → status: PENDING
+3. Client accepts bid → Contract created, Project status: IN_PROGRESS
+4. Client funds escrow → Payment status: ESCROW_HOLD
+5. Work completed → Client releases payment → Payment status: RELEASED
+6. Money credited to freelancer wallet
+```
 
 ---
 
@@ -1493,11 +618,21 @@ features/payments/
 features/contracts/
 ├── services/
 │   └── contractService.ts
+├── hooks/
+│   └── useContracts.ts
 └── components/
     ├── ContractCard.tsx
     ├── ContractDetail.tsx
     └── ActiveContractsList.tsx
 ```
+
+#### Backend Integration
+| Endpoint | Method | Auth | Purpose |
+|----------|--------|------|---------|
+| `/api/v1/contracts/{id}` | GET | CLIENT/FREELANCER | Get contract details |
+| `/api/v1/contracts` | GET | CLIENT/FREELANCER | List contracts |
+
+**Note**: Contracts are auto-created when a bid is accepted (backend handles this).
 
 ---
 
@@ -1505,7 +640,7 @@ features/contracts/
 **Duration**: 3-4 days | **Week**: 5-6
 
 #### Objective
-Build real-time messaging interface (WebSocket or polling).
+Build messaging interface for project communication.
 
 #### Package Structure
 ```
@@ -1513,8 +648,9 @@ features/chat/
 ├── services/
 │   └── chatService.ts
 ├── hooks/
+│   ├── useConversations.ts
 │   ├── useMessages.ts
-│   └── useWebSocket.ts
+│   └── useWebSocket.ts (optional)
 └── components/
     ├── ConversationList.tsx
     ├── MessageThread.tsx
@@ -1523,62 +659,22 @@ features/chat/
     └── UnreadBadge.tsx
 ```
 
-#### WebSocket Hook (for real-time)
-**File**: `features/chat/hooks/useWebSocket.ts`
+#### Backend Integration
+| Endpoint | Method | Auth | Purpose |
+|----------|--------|------|---------|
+| `/api/v1/conversations` | GET | USER | List conversations |
+| `/api/v1/conversations/{id}/messages` | GET | USER | Get messages |
+| `/api/v1/messages` | POST | USER | Send message |
+| `/api/v1/messages/{id}/read` | PATCH | USER | Mark as read |
 
-```typescript
-'use client';
+#### Key Features
+1. Conversation list (grouped by project)
+2. Real-time or polling message updates
+3. Read/unread status
+4. Typing indicators (optional)
+5. File attachments (optional for MVP)
 
-import { useEffect, useRef, useState } from 'react';
-
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8081/ws';
-
-export function useWebSocket(conversationId: string) {
-  const [messages, setMessages] = useState<any[]>([]);
-  const [connected, setConnected] = useState(false);
-  const wsRef = useRef<WebSocket | null>(null);
-
-  useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    const ws = new WebSocket(`${WS_URL}?token=${token}&conversationId=${conversationId}`);
-
-    ws.onopen = () => {
-      setConnected(true);
-      console.log('WebSocket connected');
-    };
-
-    ws.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      setMessages((prev) => [...prev, message]);
-    };
-
-    ws.onclose = () => {
-      setConnected(false);
-      console.log('WebSocket disconnected');
-    };
-
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-
-    wsRef.current = ws;
-
-    return () => {
-      ws.close();
-    };
-  }, [conversationId]);
-
-  const sendMessage = (content: string) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ content }));
-    }
-  };
-
-  return { messages, connected, sendMessage };
-}
-```
-
-**Alternative: Polling-based approach**
+#### Polling Implementation (MVP)
 ```typescript
 // Fallback for MVP without WebSocket
 export function useMessagesPolling(conversationId: string, enabled = true) {
@@ -1601,6 +697,8 @@ export function useMessagesPolling(conversationId: string, enabled = true) {
 features/reviews/
 ├── services/
 │   └── reviewService.ts
+├── hooks/
+│   └── useReviews.ts
 └── components/
     ├── ReviewCard.tsx
     ├── ReviewForm.tsx
@@ -1609,54 +707,97 @@ features/reviews/
     └── ReviewStats.tsx
 ```
 
+#### Backend Integration
+| Endpoint | Method | Auth | Purpose |
+|----------|--------|------|---------|
+| `/api/v1/reviews` | POST | USER | Create review |
+| `/api/v1/reviews/project/{projectId}` | GET | None | Get project reviews |
+| `/api/v1/reviews/user/{userId}` | GET | None | Get user reviews |
+
+#### Key Features
+1. Submit review (after project completion)
+2. View reviews by project
+3. View reviews by user
+4. Rating breakdown (communication, quality, etc.)
+
 ---
 
 ### Phase 10: Dashboard & Analytics ⭐⭐ Priority 2
 **Duration**: 3-4 days | **Week**: 6-7
 
 #### Objective
-Build role-based dashboards for clients and freelancers.
+Build role-based dashboards.
 
 #### Package Structure
 ```
 app/dashboard/
+├── layout.tsx                 # Dashboard layout with navigation
 ├── client/
-│   ├── page.tsx
+│   ├── page.tsx              # Client dashboard overview
 │   ├── projects/
-│   │   └── page.tsx
+│   │   ├── page.tsx          # Client's projects
+│   │   └── [id]/page.tsx     # Project detail
 │   └── payments/
-│       └── page.tsx
+│       └── page.tsx          # Payment history
 └── freelancer/
-    ├── page.tsx
+    ├── page.tsx              # Freelancer dashboard overview
     ├── bids/
-    │   └── page.tsx
+    │   └── page.tsx          # Freelancer's bids
     ├── contracts/
-    │   └── page.tsx
+    │   └── page.tsx          # Active contracts
     └── earnings/
-        └── page.tsx
+        └── page.tsx          # Earnings overview
 ```
 
-#### Dashboard Layout
-**File**: `app/dashboard/layout.tsx`
+#### Dashboard Navigation
+**File**: `components/layout/DashboardNav.tsx`
 
 ```typescript
-import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
-import { DashboardNav } from '@/components/layout/DashboardNav';
+'use client';
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+import Link from 'next/link';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import {
+  LayoutDashboard,
+  Briefcase,
+  DollarSign,
+  MessageSquare,
+  FileText,
+  Users,
+} from 'lucide-react';
+
+export function DashboardNav() {
+  const { user } = useAuth();
+  const isClient = user?.role === 'CLIENT';
+
   return (
-    <ProtectedRoute>
-      <div className="flex min-h-screen">
-        <DashboardNav />
-        <main className="flex-1 p-8">
-          {children}
-        </main>
-      </div>
-    </ProtectedRoute>
+    <aside className="w-64 border-r min-h-screen p-4">
+      <nav className="space-y-2">
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2 px-4 py-2 rounded hover:bg-accent"
+        >
+          <LayoutDashboard className="h-4 w-4" />
+          Dashboard
+        </Link>
+
+        {isClient ? (
+          <>
+            <Link href="/dashboard/projects">My Projects</Link>
+            <Link href="/dashboard/payments">Payments</Link>
+          </>
+        ) : (
+          <>
+            <Link href="/dashboard/bids">My Bids</Link>
+            <Link href="/dashboard/contracts">Contracts</Link>
+            <Link href="/dashboard/earnings">Earnings</Link>
+          </>
+        )}
+
+        <Link href="/dashboard/messages">Messages</Link>
+        <Link href="/dashboard/profile">Profile</Link>
+      </nav>
+    </aside>
   );
 }
 ```
@@ -1666,20 +807,35 @@ export default function DashboardLayout({
 ### Phase 11: Performance Optimization ⭐ Priority 1
 **Duration**: 2-3 days | **Week**: 7
 
-#### Apply Vercel React Best Practices
+#### Apply Best Practices
 
-##### 11.1 Code Splitting
+##### 11.1 Server Components by Default
 ```typescript
-// Dynamic import for heavy components
-import dynamic from 'next/dynamic';
+// ✅ Server Component - no "use client"
+async function ProjectList({ filters }: ProjectListProps) {
+  const projects = await fetcher('/projects/search', {
+    method: 'POST',
+    body: JSON.stringify(filters),
+  });
 
-const ChartComponent = dynamic(() => import('@/components/charts/RevenueChart'), {
-  loading: () => <div>Loading chart...</div>,
-  ssr: false,
-});
+  return <ProjectGrid projects={projects} />;
+}
 ```
 
-##### 11.2 Image Optimization
+##### 11.2 Dynamic Imports for Heavy Components
+```typescript
+import dynamic from 'next/dynamic';
+
+const ChartComponent = dynamic(
+  () => import('@/components/charts/RevenueChart'),
+  {
+    loading: () => <div>Loading chart...</div>,
+    ssr: false,
+  }
+);
+```
+
+##### 11.3 Image Optimization
 ```typescript
 import Image from 'next/image';
 
@@ -1692,64 +848,47 @@ import Image from 'next/image';
 />
 ```
 
-##### 11.3 Server Components Where Possible
-```typescript
-// Server component by default (no "use client")
-async function DashboardStats() {
-  const stats = await fetcher('/clients/stats');
-
-  return (
-    <div className="grid gap-4 md:grid-cols-3">
-      <StatCard label="Total Projects" value={stats.totalProjects} />
-      <StatCard label="Active Projects" value={stats.activeProjects} />
-      <StatCard label="Total Spent" value={`$${stats.totalSpent}`} />
-    </div>
-  );
-}
-```
+##### 11.4 Code Splitting by Route
+Next.js App Router automatically handles this. Ensure large components are in separate files.
 
 ---
 
 ### Phase 12: Testing & Deployment ⭐⭐ Priority 2
-**Duration**: 2-3 days | **Week**: 7
+**Duration**: 2-3 days | **Week**: 7-8
 
 #### Tasks
 
 ##### 12.1 Testing Setup
 ```bash
-# Install testing dependencies
-pnpm add -D vitest @testing-library/react @testing-library/jest-dom @vitejs/plugin-react
+pnpm add -D vitest @testing-library/react @testing-library/jest-dom
 ```
 
+##### 12.2 Component Testing
 ```typescript
-// vitest.config.ts
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
+// Example test
+import { render, screen } from '@testing-library/react';
+import { ProjectCard } from '@/features/projects/components/ProjectCard';
 
-export default defineConfig({
-  plugins: [react()],
-  test: {
-    environment: 'jsdom',
-    setupFiles: ['./src/test/setup.ts'],
-  },
+describe('ProjectCard', () => {
+  it('renders project information', () => {
+    render(<ProjectCard project={mockProject} />);
+    expect(screen.getByText('Test Project')).toBeInTheDocument();
+  });
 });
 ```
 
-##### 12.2 Production Build
+##### 12.3 Production Build
 ```bash
-# Build for production
 pnpm build
-
-# Test production build locally
 pnpm start
 ```
 
-##### 12.3 Deployment Checklist
+##### 12.4 Deployment Checklist
 - [ ] Environment variables configured
 - [ ] CORS configured on backend
 - [ ] API_URL points to production backend
 - [ ] Analytics integrated (optional)
-- [ ] Error tracking (Sentry) configured
+- [ ] Error tracking configured (Sentry - optional)
 - [ ] Performance monitoring enabled
 
 ---
@@ -1770,11 +909,11 @@ Week 4:  ██████████ Phase 4 completion
 Week 5:  ████████████████ Phase 5 (Bidding)
          ██████ Phase 6 (Payments) - START
 
-Week 6:  ████████████████████ Phase 6 (Payments)
-         ██████ Phase 8 (Chat)
+Week 6:  ██████████ Phase 6 (Payments)
+         ████████ Phase 8 (Chat)
+         ██████ Phase 9 (Reviews)
 
-Week 7:  ████████ Phase 9 (Reviews)
-         ██████████ Phase 10 (Dashboard)
+Week 7:  ██████████ Phase 10 (Dashboard)
          ██████ Phase 11 (Optimization)
 
 Week 8:  ██████████ Phase 12 (Testing + Deployment)
@@ -1808,19 +947,13 @@ Week 8:  ██████████ Phase 12 (Testing + Deployment)
 ## 📝 Important Notes
 
 ### State Management Strategy
-- **Server State**: React Query (@tanstack/react-query) for API data
+- **Server State**: TanStack Query for API data (caching, refetching)
 - **Client State**: React Context for auth, theme
-- **Form State**: React Hook Form for forms
-
-### Styling Conventions
-- Use shadcn/ui components as base
-- Extend with custom Tailwind classes when needed
-- Follow CSS variables for theming
-- Use `cn()` utility for conditional classes
+- **Form State**: React Hook Form for complex forms
 
 ### API Integration Patterns
 ```typescript
-// ✅ Use React Query for data fetching
+// ✅ Use TanStack Query for data fetching
 const { data, isLoading, error } = useQuery({
   queryKey: ['projects', filters],
   queryFn: () => projectService.search(filters),
@@ -1831,20 +964,71 @@ const mutation = useMutation({
   mutationFn: (data) => projectService.create(data),
   onSuccess: () => {
     queryClient.invalidateQueries({ queryKey: ['projects'] });
+    toast.success('Project created!');
+  },
+  onError: (error) => {
+    toast.error(error.message);
   },
 });
 ```
 
 ### Error Handling Patterns
-```typescript
-// Global error boundary
-// Page-level error.tsx
-// Component-level try-catch
-// Toast notifications for user feedback
+- Global error boundary (app/error.tsx)
+- Page-level error.tsx for route groups
+- Toast notifications for user feedback
+- Graceful degradation for failed API calls
+
+### TypeScript Best Practices
+- Define all API response types
+- Use strict mode
+- Avoid `any` types
+- Leverage utility types (Pick, Omit, Partial)
+
+---
+
+## 🚀 Getting Started
+
+### Quick Start Commands
+
+```bash
+# 1. Install dependencies
+cd FreelancerUp-FE
+pnpm install
+
+# 2. Configure environment
+cp .env.example .env.local
+# Edit .env.local with your API URL
+
+# 3. Run development server
+pnpm dev
+
+# 4. Access application
+# Frontend: http://localhost:3000
+# Backend: http://localhost:8081
+# Swagger: http://localhost:8081/swagger-ui/index.html
+```
+
+### Development Workflow
+
+```bash
+# 1. Start backend
+cd ../FreelancerUp-BE
+./mvnw spring-boot:run
+
+# 2. Start frontend (new terminal)
+cd FreelancerUp-FE
+pnpm dev
+
+# 3. Test endpoints via Swagger
+# http://localhost:8081/swagger-ui/index.html
+
+# 4. Build for production
+pnpm build
+pnpm start
 ```
 
 ---
 
-**Last Updated**: 2026-01-21
-**Version**: MVP v1.0
-**Status**: 📝 Ready for Implementation
+**Last Updated**: 2026-01-22
+**Version**: MVP v2.0 (Aligned with Backend Status)
+**Status**: 🚧 In Development (Phase 0-1)

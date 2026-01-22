@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../hooks/useAuth';
+import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -31,10 +32,7 @@ export function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps)
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="relative h-12 w-12">
-            <div className="absolute inset-0 rounded-full border-4 border-primary/20" />
-            <div className="absolute inset-0 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          </div>
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-sm text-muted-foreground">Loading...</p>
         </div>
       </div>

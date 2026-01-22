@@ -15,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { toast } from 'sonner';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -32,12 +33,16 @@ export default function RegisterPage() {
 
     // Validation
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      const errorMessage = 'Mật khẩu không khớp';
+      setError(errorMessage);
+      toast.error(errorMessage);
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      const errorMessage = 'Mật khẩu phải có ít nhất 6 ký tự';
+      setError(errorMessage);
+      toast.error(errorMessage);
       return;
     }
 
@@ -45,10 +50,13 @@ export default function RegisterPage() {
 
     try {
       await register(email, password, fullName);
+      toast.success('Đăng ký thành công! Vui lòng chọn vai trò của bạn.');
       // After registration, user will need to select role (Client/Freelancer)
       router.push('/select-role');
     } catch (err: any) {
-      setError(err.message || 'Registration failed. Please try again.');
+      const errorMessage = err.message || 'Đăng ký thất bại. Vui lòng thử lại.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
