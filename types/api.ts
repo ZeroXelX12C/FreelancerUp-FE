@@ -144,6 +144,27 @@ export interface RegisterFreelancerRequest {
   skills: FreelancerSkill[];
 }
 
+export interface FreelancerStatsResponse {
+  freelancerId: string;
+  fullName: string;
+  totalProjects: number;
+  activeProjects: number;
+  completedProjects: number;
+  totalEarned: number;
+  availableBalance: number;
+  escrowBalance: number;
+  averageRating: number;
+  totalReviews: number;
+  successRate: number;
+}
+
+export interface UpdateFreelancerProfileRequest {
+  bio?: string;
+  hourlyRate?: number;
+  availability?: Availability;
+  skills?: FreelancerSkill[];
+}
+
 // ----------------------------------------------------------------------------
 // Project Types
 // ----------------------------------------------------------------------------
