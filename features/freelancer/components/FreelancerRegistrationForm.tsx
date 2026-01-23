@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { freelancerService } from '../services/freelancerService';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import type { RegisterFreelancerRequest, FreelancerSkill } from '@/types/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +31,7 @@ type Availability = 'AVAILABLE' | 'BUSY' | 'OFFLINE';
 
 export function FreelancerRegistrationForm() {
   const router = useRouter();
+  const { refreshUser } = useAuth();
   const [formData, setFormData] = useState<
     Omit<RegisterFreelancerRequest, 'skills'>
   >({
@@ -42,8 +44,10 @@ export function FreelancerRegistrationForm() {
   const mutation = useMutation({
     mutationFn: (data: RegisterFreelancerRequest) =>
       freelancerService.register(data),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success('Freelancer registration successful!');
+      // Refresh user data to get the updated role
+      await refreshUser();
       setTimeout(() => {
         window.location.href = '/dashboard/freelancer';
       }, 1000);

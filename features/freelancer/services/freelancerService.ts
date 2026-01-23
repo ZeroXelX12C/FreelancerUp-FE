@@ -8,7 +8,7 @@ import type {
 } from '@/types/api';
 
 // Mock mode flag - set to false when backend is ready
-const MOCK_MODE = true;
+const MOCK_MODE = false;
 
 // Mock data generators
 const mockFreelancerProfile = (): FreelancerProfileResponse => ({
