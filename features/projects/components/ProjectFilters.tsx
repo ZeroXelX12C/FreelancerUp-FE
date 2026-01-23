@@ -39,7 +39,9 @@ export function ProjectFilters({ onFiltersChange, currentFilters = {} }: Project
   );
   const [minBudget, setMinBudget] = useState(currentFilters.minBudget?.toString() || '');
   const [maxBudget, setMaxBudget] = useState(currentFilters.maxBudget?.toString() || '');
-  const [sortBy, setSortBy] = useState(currentFilters.sortBy || 'createdAt');
+  const [sortBy, setSortBy] = useState<"createdAt" | "deadline" | "budget">(
+    (currentFilters.sortBy as "createdAt" | "deadline" | "budget") || 'createdAt'
+  );
   const [sortDirection, setSortDirection] = useState<'ASC' | 'DESC'>(
     currentFilters.sortDirection || 'DESC'
   );
@@ -201,7 +203,7 @@ export function ProjectFilters({ onFiltersChange, currentFilters = {} }: Project
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label htmlFor="sortBy">Sort By</Label>
-                <Select value={sortBy} onValueChange={(value) => setSortBy(value)}>
+                <Select value={sortBy} onValueChange={(value) => setSortBy(value as "createdAt" | "deadline" | "budget")}>
                   <SelectTrigger id="sortBy">
                     <SelectValue />
                   </SelectTrigger>

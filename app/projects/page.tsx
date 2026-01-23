@@ -44,12 +44,12 @@ export default function ProjectsPage() {
     });
   };
 
-  const hasActiveFilters = keyword || Object.keys(filters).some((key) => {
+  const hasActiveFilters = Boolean(keyword || Object.keys(filters).some((key) => {
     if (key === 'sortBy' || key === 'sortDirection') return false;
     const value = filters[key as keyof ProjectSearchRequest];
     if (Array.isArray(value)) return value.length > 0;
     return value !== undefined && value !== null;
-  });
+  }));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4">
