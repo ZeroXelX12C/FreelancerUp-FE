@@ -14,6 +14,7 @@
 ## 🎯 Backend Alignment
 
 The backend is **90% complete** with all 8 core modules implemented:
+
 - ✅ Authentication (JWT-based)
 - ✅ Client Management (profiles, statistics)
 - ✅ Project Management (CRUD, search, filters)
@@ -25,20 +26,24 @@ The backend is **90% complete** with all 8 core modules implemented:
 - 🚧 Redis Caching (stubbed, implementation pending)
 
 **Key Backend APIs Available**:
-- Swagger UI: `http://localhost:8081/swagger-ui/index.html`
-- Base URL: `http://localhost:8081/api/v1`
+
+- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+- Base URL: `http://localhost:8080/api/v1`
 
 ---
 
 ## 🎯 Implementation Phases
 
 ### Phase 0: Foundation Setup ⭐ Priority 0
+
 **Duration**: 1-2 days | **Week**: 1 | **Status**: ✅ Complete
 
 #### Objective
+
 Set up foundational infrastructure.
 
 #### Completed Tasks
+
 - ✅ Next.js 16 project initialized
 - ✅ TypeScript configured with path aliases
 - ✅ Tailwind CSS 4 + shadcn/ui setup
@@ -47,6 +52,7 @@ Set up foundational infrastructure.
 - ✅ Root layout with metadata
 
 #### Remaining Tasks
+
 - ⚠️ Environment variables configuration (`.env.local`)
 - ⚠️ TypeScript type definitions
 - ⚠️ API client with auth handling
@@ -57,12 +63,15 @@ Set up foundational infrastructure.
 ---
 
 ### Phase 1: Authentication Module ⭐⭐⭐ Priority 1
+
 **Duration**: 2-3 days | **Week**: 1 | **Status**: 🚧 In Progress
 
 #### Objective
+
 Build complete authentication flow with JWT tokens.
 
 #### Package Structure
+
 ```
 features/auth/
 ├── services/
@@ -79,21 +88,23 @@ features/auth/
 ```
 
 #### Backend Integration
-| Endpoint | Method | Auth | Purpose |
-|----------|--------|------|---------|
-| `/api/v1/auth/login` | POST | None | Login with email/password |
-| `/api/v1/auth/register` | POST | None | Register new user |
-| `/api/v1/auth/logout` | POST | Bearer | Logout (invalidate tokens) |
-| `/api/v1/auth/refresh` | POST | None | Refresh access token |
-| `/api/v1/auth/me` | GET | Bearer | Get current user profile |
+
+| Endpoint                | Method | Auth   | Purpose                    |
+| ----------------------- | ------ | ------ | -------------------------- |
+| `/api/v1/auth/login`    | POST   | None   | Login with email/password  |
+| `/api/v1/auth/register` | POST   | None   | Register new user          |
+| `/api/v1/auth/logout`   | POST   | Bearer | Logout (invalidate tokens) |
+| `/api/v1/auth/refresh`  | POST   | None   | Refresh access token       |
+| `/api/v1/auth/me`       | GET    | Bearer | Get current user profile   |
 
 #### Tasks
 
 ##### 1.1 Complete API Client Setup
+
 **File**: `src/lib/api/fetcher.ts`
 
 ```typescript
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
 
 // Token management
 export const getAccessToken = (): string | null => {
@@ -182,6 +193,7 @@ const refreshAccessToken = async (): Promise<boolean> => {
 ```
 
 ##### 1.2 Auth Service
+
 **File**: `features/auth/services/authService.ts`
 
 ```typescript
@@ -239,6 +251,7 @@ export const authService = {
 ```
 
 ##### 1.3 Auth Context & Hook
+
 **File**: `features/auth/hooks/useAuth.ts`
 
 ```typescript
@@ -325,6 +338,7 @@ export const useAuth = () => {
 ```
 
 ##### 1.4 Update Root Layout
+
 **File**: `app/layout.tsx`
 
 ```typescript
@@ -349,6 +363,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 ```
 
 #### Deliverables
+
 - ✅ Login page with form validation
 - ✅ Register page
 - ⚠️ Auth context and hooks (needs completion)
@@ -360,12 +375,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 ---
 
 ### Phase 2: Client Module ⭐⭐ Priority 2
+
 **Duration**: 2-3 days | **Week**: 2
 
 #### Objective
+
 Build client-specific features after user is logged in.
 
 #### Package Structure
+
 ```
 features/client/
 ├── services/
@@ -381,20 +399,23 @@ features/client/
 ```
 
 #### Backend Integration
-| Endpoint | Method | Auth | Purpose |
-|----------|--------|------|---------|
-| `/api/v1/clients/register` | POST | USER | Register as client |
-| `/api/v1/clients/profile` | GET | CLIENT | Get client profile |
-| `/api/v1/clients/profile` | PUT | CLIENT | Update profile |
-| `/api/v1/clients/stats` | GET | CLIENT | Get statistics |
-| `/api/v1/clients/profile` | DELETE | CLIENT | Delete profile |
+
+| Endpoint                   | Method | Auth   | Purpose            |
+| -------------------------- | ------ | ------ | ------------------ |
+| `/api/v1/clients/register` | POST   | USER   | Register as client |
+| `/api/v1/clients/profile`  | GET    | CLIENT | Get client profile |
+| `/api/v1/clients/profile`  | PUT    | CLIENT | Update profile     |
+| `/api/v1/clients/stats`    | GET    | CLIENT | Get statistics     |
+| `/api/v1/clients/profile`  | DELETE | CLIENT | Delete profile     |
 
 #### Key Features
+
 1. **Client Registration Flow** - After account creation, complete company info
 2. **Profile Management** - View/edit company details
 3. **Statistics Dashboard** - Total spent, projects posted, active projects
 
 #### Client Registration Page
+
 **File**: `app/register/client/page.tsx`
 
 ```typescript
@@ -425,12 +446,15 @@ export default function ClientRegisterPage() {
 ---
 
 ### Phase 3: Freelancer Module ⭐⭐ Priority 2
+
 **Duration**: 2-3 days | **Week**: 2
 
 #### Objective
+
 Build freelancer-specific features.
 
 #### Package Structure
+
 ```
 features/freelancer/
 ├── services/
@@ -447,14 +471,16 @@ features/freelancer/
 ```
 
 #### Backend Integration
-| Endpoint | Method | Auth | Purpose |
-|----------|--------|------|---------|
-| `/api/v1/freelancers/register` | POST | USER | Register as freelancer |
-| `/api/v1/freelancers/profile` | GET | FREELANCER | Get profile |
-| `/api/v1/freelancers/profile` | PUT | FREELANCER | Update profile |
-| `/api/v1/freelancers/{id}` | GET | None | View public profile |
+
+| Endpoint                       | Method | Auth       | Purpose                |
+| ------------------------------ | ------ | ---------- | ---------------------- |
+| `/api/v1/freelancers/register` | POST   | USER       | Register as freelancer |
+| `/api/v1/freelancers/profile`  | GET    | FREELANCER | Get profile            |
+| `/api/v1/freelancers/profile`  | PUT    | FREELANCER | Update profile         |
+| `/api/v1/freelancers/{id}`     | GET    | None       | View public profile    |
 
 #### Key Features
+
 1. Extended profile (bio, hourly rate, availability)
 2. Skills management (name, proficiency, experience)
 3. Work experience history
@@ -464,12 +490,15 @@ features/freelancer/
 ---
 
 ### Phase 4: Project Discovery ⭐⭐⭐ Priority 1
+
 **Duration**: 3-4 days | **Week**: 2-3
 
 #### Objective
+
 Build project listing, search, and detail pages.
 
 #### Package Structure
+
 ```
 features/projects/
 ├── services/
@@ -489,21 +518,24 @@ features/projects/
 ```
 
 #### Backend Integration
-| Endpoint | Method | Auth | Purpose |
-|----------|--------|------|---------|
-| `/api/v1/projects/search` | GET | None | Search/filter projects |
-| `/api/v1/projects/{id}` | GET | None | Get project details |
-| `/api/v1/projects` | POST | CLIENT | Create project |
-| `/api/v1/projects/{id}/status` | PATCH | CLIENT/FREELANCER | Update status |
-| `/api/v1/projects/{id}` | DELETE | CLIENT | Delete project |
+
+| Endpoint                       | Method | Auth              | Purpose                |
+| ------------------------------ | ------ | ----------------- | ---------------------- |
+| `/api/v1/projects/search`      | GET    | None              | Search/filter projects |
+| `/api/v1/projects/{id}`        | GET    | None              | Get project details    |
+| `/api/v1/projects`             | POST   | CLIENT            | Create project         |
+| `/api/v1/projects/{id}/status` | PATCH  | CLIENT/FREELANCER | Update status          |
+| `/api/v1/projects/{id}`        | DELETE | CLIENT            | Delete project         |
 
 #### Key Features
+
 1. **Project Listing** - Paginated list with filters
 2. **Advanced Search** - By keyword, skills, budget, type, status
 3. **Project Detail** - Full project info with client details
 4. **Create Project** - Form for clients to post projects
 
 #### Project List Page (Server Component)
+
 **File**: `app/projects/page.tsx`
 
 ```typescript
@@ -519,12 +551,15 @@ export default function ProjectsPage() {
 ---
 
 ### Phase 5: Bidding System ⭐⭐⭐ Priority 2
+
 **Duration**: 2-3 days | **Week**: 3-4
 
 #### Objective
+
 Build bid submission and management.
 
 #### Package Structure
+
 ```
 features/bids/
 ├── services/
@@ -542,15 +577,17 @@ features/bids/
 ```
 
 #### Backend Integration
-| Endpoint | Method | Auth | Purpose |
-|----------|--------|------|---------|
-| `/api/v1/projects/{projectId}/bids` | POST | FREELANCER | Submit bid |
-| `/api/v1/projects/{projectId}/bids` | GET | CLIENT | List bids for project |
-| `/api/v1/bids/{id}/accept` | PATCH | CLIENT | Accept bid |
-| `/api/v1/bids/{id}/reject` | PATCH | CLIENT | Reject bid |
-| `/api/v1/bids/{id}/withdraw` | DELETE | FREELANCER | Withdraw bid |
+
+| Endpoint                            | Method | Auth       | Purpose               |
+| ----------------------------------- | ------ | ---------- | --------------------- |
+| `/api/v1/projects/{projectId}/bids` | POST   | FREELANCER | Submit bid            |
+| `/api/v1/projects/{projectId}/bids` | GET    | CLIENT     | List bids for project |
+| `/api/v1/bids/{id}/accept`          | PATCH  | CLIENT     | Accept bid            |
+| `/api/v1/bids/{id}/reject`          | PATCH  | CLIENT     | Reject bid            |
+| `/api/v1/bids/{id}/withdraw`        | DELETE | FREELANCER | Withdraw bid          |
 
 #### Key Features
+
 1. Submit bid with proposal, price, duration
 2. View all bids for own projects (client)
 3. Accept/reject bids (client)
@@ -560,12 +597,15 @@ features/bids/
 ---
 
 ### Phase 6: Wallet & Payments ⭐⭐⭐⭐ Priority 3
+
 **Duration**: 3-4 days | **Week**: 4-5
 
 #### Objective
+
 Build wallet management and payment interface.
 
 #### Package Structure
+
 ```
 features/payments/
 ├── services/
@@ -583,15 +623,17 @@ features/payments/
 ```
 
 #### Backend Integration
-| Endpoint | Method | Auth | Purpose |
-|----------|--------|------|---------|
-| `/api/v1/wallets` | GET | USER | Get wallet balance |
-| `/api/v1/wallets/transactions` | GET | USER | Transaction history |
-| `/api/v1/payments/escrow/fund` | POST | CLIENT | Fund escrow |
-| `/api/v1/payments/escrow/release` | POST | CLIENT | Release payment |
-| `/api/v1/payments/{projectId}` | GET | USER | Get payment details |
+
+| Endpoint                          | Method | Auth   | Purpose             |
+| --------------------------------- | ------ | ------ | ------------------- |
+| `/api/v1/wallets`                 | GET    | USER   | Get wallet balance  |
+| `/api/v1/wallets/transactions`    | GET    | USER   | Transaction history |
+| `/api/v1/payments/escrow/fund`    | POST   | CLIENT | Fund escrow         |
+| `/api/v1/payments/escrow/release` | POST   | CLIENT | Release payment     |
+| `/api/v1/payments/{projectId}`    | GET    | USER   | Get payment details |
 
 #### Key Features
+
 1. View wallet balance (available, escrow, total earned)
 2. Transaction history with pagination
 3. Fund escrow for project (client)
@@ -599,6 +641,7 @@ features/payments/
 5. Escrow status tracking
 
 #### Important Payment Flow
+
 ```
 1. Client posts project → status: OPEN
 2. Freelancer submits bid → status: PENDING
@@ -611,9 +654,11 @@ features/payments/
 ---
 
 ### Phase 7: Contract Management ⭐⭐ Priority 3
+
 **Duration**: 2 days | **Week**: 5
 
 #### Package Structure
+
 ```
 features/contracts/
 ├── services/
@@ -627,22 +672,26 @@ features/contracts/
 ```
 
 #### Backend Integration
-| Endpoint | Method | Auth | Purpose |
-|----------|--------|------|---------|
-| `/api/v1/contracts/{id}` | GET | CLIENT/FREELANCER | Get contract details |
-| `/api/v1/contracts` | GET | CLIENT/FREELANCER | List contracts |
+
+| Endpoint                 | Method | Auth              | Purpose              |
+| ------------------------ | ------ | ----------------- | -------------------- |
+| `/api/v1/contracts/{id}` | GET    | CLIENT/FREELANCER | Get contract details |
+| `/api/v1/contracts`      | GET    | CLIENT/FREELANCER | List contracts       |
 
 **Note**: Contracts are auto-created when a bid is accepted (backend handles this).
 
 ---
 
 ### Phase 8: Chat System ⭐⭐ Priority 2
+
 **Duration**: 3-4 days | **Week**: 5-6
 
 #### Objective
+
 Build messaging interface for project communication.
 
 #### Package Structure
+
 ```
 features/chat/
 ├── services/
@@ -660,14 +709,16 @@ features/chat/
 ```
 
 #### Backend Integration
-| Endpoint | Method | Auth | Purpose |
-|----------|--------|------|---------|
-| `/api/v1/conversations` | GET | USER | List conversations |
-| `/api/v1/conversations/{id}/messages` | GET | USER | Get messages |
-| `/api/v1/messages` | POST | USER | Send message |
-| `/api/v1/messages/{id}/read` | PATCH | USER | Mark as read |
+
+| Endpoint                              | Method | Auth | Purpose            |
+| ------------------------------------- | ------ | ---- | ------------------ |
+| `/api/v1/conversations`               | GET    | USER | List conversations |
+| `/api/v1/conversations/{id}/messages` | GET    | USER | Get messages       |
+| `/api/v1/messages`                    | POST   | USER | Send message       |
+| `/api/v1/messages/{id}/read`          | PATCH  | USER | Mark as read       |
 
 #### Key Features
+
 1. Conversation list (grouped by project)
 2. Real-time or polling message updates
 3. Read/unread status
@@ -675,6 +726,7 @@ features/chat/
 5. File attachments (optional for MVP)
 
 #### Polling Implementation (MVP)
+
 ```typescript
 // Fallback for MVP without WebSocket
 export function useMessagesPolling(conversationId: string, enabled = true) {
@@ -690,9 +742,11 @@ export function useMessagesPolling(conversationId: string, enabled = true) {
 ---
 
 ### Phase 9: Review System ⭐⭐ Priority 2
+
 **Duration**: 2 days | **Week**: 6
 
 #### Package Structure
+
 ```
 features/reviews/
 ├── services/
@@ -708,13 +762,15 @@ features/reviews/
 ```
 
 #### Backend Integration
-| Endpoint | Method | Auth | Purpose |
-|----------|--------|------|---------|
-| `/api/v1/reviews` | POST | USER | Create review |
-| `/api/v1/reviews/project/{projectId}` | GET | None | Get project reviews |
-| `/api/v1/reviews/user/{userId}` | GET | None | Get user reviews |
+
+| Endpoint                              | Method | Auth | Purpose             |
+| ------------------------------------- | ------ | ---- | ------------------- |
+| `/api/v1/reviews`                     | POST   | USER | Create review       |
+| `/api/v1/reviews/project/{projectId}` | GET    | None | Get project reviews |
+| `/api/v1/reviews/user/{userId}`       | GET    | None | Get user reviews    |
 
 #### Key Features
+
 1. Submit review (after project completion)
 2. View reviews by project
 3. View reviews by user
@@ -723,12 +779,15 @@ features/reviews/
 ---
 
 ### Phase 10: Dashboard & Analytics ⭐⭐ Priority 2
+
 **Duration**: 3-4 days | **Week**: 6-7
 
 #### Objective
+
 Build role-based dashboards.
 
 #### Package Structure
+
 ```
 app/dashboard/
 ├── layout.tsx                 # Dashboard layout with navigation
@@ -750,6 +809,7 @@ app/dashboard/
 ```
 
 #### Dashboard Navigation
+
 **File**: `components/layout/DashboardNav.tsx`
 
 ```typescript
@@ -805,11 +865,13 @@ export function DashboardNav() {
 ---
 
 ### Phase 11: Performance Optimization ⭐ Priority 1
+
 **Duration**: 2-3 days | **Week**: 7
 
 #### Apply Best Practices
 
 ##### 11.1 Server Components by Default
+
 ```typescript
 // ✅ Server Component - no "use client"
 async function ProjectList({ filters }: ProjectListProps) {
@@ -823,6 +885,7 @@ async function ProjectList({ filters }: ProjectListProps) {
 ```
 
 ##### 11.2 Dynamic Imports for Heavy Components
+
 ```typescript
 import dynamic from 'next/dynamic';
 
@@ -836,6 +899,7 @@ const ChartComponent = dynamic(
 ```
 
 ##### 11.3 Image Optimization
+
 ```typescript
 import Image from 'next/image';
 
@@ -849,21 +913,25 @@ import Image from 'next/image';
 ```
 
 ##### 11.4 Code Splitting by Route
+
 Next.js App Router automatically handles this. Ensure large components are in separate files.
 
 ---
 
 ### Phase 12: Testing & Deployment ⭐⭐ Priority 2
+
 **Duration**: 2-3 days | **Week**: 7-8
 
 #### Tasks
 
 ##### 12.1 Testing Setup
+
 ```bash
 pnpm add -D vitest @testing-library/react @testing-library/jest-dom
 ```
 
 ##### 12.2 Component Testing
+
 ```typescript
 // Example test
 import { render, screen } from '@testing-library/react';
@@ -878,12 +946,14 @@ describe('ProjectCard', () => {
 ```
 
 ##### 12.3 Production Build
+
 ```bash
 pnpm build
 pnpm start
 ```
 
 ##### 12.4 Deployment Checklist
+
 - [ ] Environment variables configured
 - [ ] CORS configured on backend
 - [ ] API_URL points to production backend
@@ -924,6 +994,7 @@ Week 8:  ██████████ Phase 12 (Testing + Deployment)
 ## 🎯 Success Criteria
 
 ### Functional Requirements
+
 - ✅ Users can register/login as Client or Freelancer
 - ✅ Clients can post and manage projects
 - ✅ Freelancers can browse and search projects
@@ -935,6 +1006,7 @@ Week 8:  ██████████ Phase 12 (Testing + Deployment)
 - ✅ Role-based dashboards work correctly
 
 ### Non-Functional Requirements
+
 - ✅ Page load time < 2 seconds
 - ✅ Time to Interactive < 3 seconds
 - ✅ Lighthouse score > 90
@@ -947,11 +1019,13 @@ Week 8:  ██████████ Phase 12 (Testing + Deployment)
 ## 📝 Important Notes
 
 ### State Management Strategy
+
 - **Server State**: TanStack Query for API data (caching, refetching)
 - **Client State**: React Context for auth, theme
 - **Form State**: React Hook Form for complex forms
 
 ### API Integration Patterns
+
 ```typescript
 // ✅ Use TanStack Query for data fetching
 const { data, isLoading, error } = useQuery({
@@ -973,12 +1047,14 @@ const mutation = useMutation({
 ```
 
 ### Error Handling Patterns
+
 - Global error boundary (app/error.tsx)
 - Page-level error.tsx for route groups
 - Toast notifications for user feedback
 - Graceful degradation for failed API calls
 
 ### TypeScript Best Practices
+
 - Define all API response types
 - Use strict mode
 - Avoid `any` types
@@ -1004,8 +1080,8 @@ pnpm dev
 
 # 4. Access application
 # Frontend: http://localhost:3000
-# Backend: http://localhost:8081
-# Swagger: http://localhost:8081/swagger-ui/index.html
+# Backend: http://localhost:8080
+# Swagger: http://localhost:8080/swagger-ui/index.html
 ```
 
 ### Development Workflow
@@ -1020,7 +1096,7 @@ cd FreelancerUp-FE
 pnpm dev
 
 # 3. Test endpoints via Swagger
-# http://localhost:8081/swagger-ui/index.html
+# http://localhost:8080/swagger-ui/index.html
 
 # 4. Build for production
 pnpm build

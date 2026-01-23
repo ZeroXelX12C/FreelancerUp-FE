@@ -18,6 +18,9 @@ export default function Home() {
             FreelancerUp
           </h1>
           <nav className="hidden md:flex items-center gap-6">
+            <Link href="/projects" className="text-sm font-medium hover:text-blue-600 transition-colors">
+              Browse Projects
+            </Link>
             <a href="#features" className="text-sm font-medium hover:text-blue-600 transition-colors">
               Tính năng
             </a>
@@ -54,14 +57,14 @@ export default function Home() {
             Content Creation, và Web Design
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-            <Link href="/register">
+            <Link href="/projects">
               <Button size="lg" className="text-lg px-8">
-                Tìm Freelancer
+                Browse Projects
               </Button>
             </Link>
             <Link href="/register">
               <Button size="lg" variant="outline" className="text-lg px-8">
-                Trở thành Freelancer
+                Post a Project
               </Button>
             </Link>
           </div>

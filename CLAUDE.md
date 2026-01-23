@@ -15,7 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **UI Components**: shadcn/ui (Radix UI primitives)
 - **Icons**: lucide-react
 - **Package Manager**: pnpm (preferred, npm also works)
-- **Backend API**: Spring Boot at `http://localhost:8081/api/v1`
+- **Backend API**: Spring Boot at `http://localhost:8080/api/v1`
 - **State Management**: TanStack Query (React Query) for server state
 
 ### Project Structure
@@ -71,7 +71,7 @@ Create a `.env.local` file in the project root:
 
 ```bash
 # Backend API URL
-NEXT_PUBLIC_API_URL=http://localhost:8081/api/v1
+NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
 
 # Other environment variables (add as needed)
 NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -84,11 +84,13 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ### App Router (Not Pages Router)
 
 This project uses **Next.js 16 App Router** with:
+
 - File-based routing in `app/` directory
 - React Server Components (RSC) by default
 - Route groups with parentheses: `(auth)` for grouping without URL segment
 
 **Key conventions**:
+
 - Use `page.tsx` for route pages
 - Use `layout.tsx` for shared layouts
 - Use `loading.tsx` for loading states
@@ -98,11 +100,13 @@ This project uses **Next.js 16 App Router** with:
 ### Server Components vs Client Components
 
 **Default to Server Components** (no `"use client"` directive):
+
 - Better performance (no client-side JavaScript)
 - Data fetching on the server
 - Secure (server code never sent to client)
 
 **Use Client Components when you need**:
+
 - Event handlers (`onClick`, `onChange`, etc.)
 - React hooks (`useState`, `useEffect`, etc.)
 - Browser APIs (`window`, `document`, etc.)
@@ -112,6 +116,7 @@ Add `"use client";` at the top of the file for client components.
 ### Path Aliases
 
 From `tsconfig.json`:
+
 ```json
 {
   "paths": {
@@ -121,27 +126,31 @@ From `tsconfig.json`:
 ```
 
 Use the `@/` prefix for imports:
+
 ```typescript
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { MyComponent } from "@/components/MyComponent";
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { MyComponent } from '@/components/MyComponent';
 ```
 
 ### shadcn/ui Configuration
 
 From `components.json`:
+
 - Style: "new-york"
 - Base color: neutral
 - CSS variables: enabled
 - Icon library: lucide-react
 
 **Path aliases** (auto-configured):
+
 - `@/components` → `components/`
 - `@/lib/utils` → `lib/utils`
 - `@/components/ui` → `components/ui/`
 - `@/hooks` → `hooks/`
 
 **Adding new shadcn/ui components**:
+
 ```bash
 npx shadcn@latest add [component-name]
 # Example:
@@ -152,18 +161,23 @@ npx shadcn@latest add dialog
 ### Tailwind CSS
 
 **Utilities**:
-- Use `cn()` function from `lib/utils.ts` for conditional classes:
-  ```tsx
-  import { cn } from "@/lib/utils";
 
-  <div className={cn(
-    "base-class",
-    condition && "conditional-class",
-    className  // allow override via prop
-  )} />
+- Use `cn()` function from `lib/utils.ts` for conditional classes:
+
+  ```tsx
+  import { cn } from '@/lib/utils';
+
+  <div
+    className={cn(
+      'base-class',
+      condition && 'conditional-class',
+      className // allow override via prop
+    )}
+  />;
   ```
 
 **CSS Variables** (defined in `app/globals.css`):
+
 - `--background`, `--foreground`
 - `--primary`, `--primary-foreground`
 - `--secondary`, `--secondary-foreground`
@@ -178,7 +192,7 @@ npx shadcn@latest add dialog
 The project uses `@tanstack/react-query` for server state management:
 
 ```tsx
-"use client";
+'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -219,18 +233,19 @@ function useUpdateProject() {
 
 ### Backend Endpoint
 
-Backend API runs on `http://localhost:8081/api/v1`
+Backend API runs on `http://localhost:8080/api/v1`
 
-**API Documentation**: Swagger UI available at `http://localhost:8081/swagger-ui/index.html`
+**API Documentation**: Swagger UI available at `http://localhost:8080/swagger-ui/index.html`
 
 ### Fetching Data Patterns
 
 **Server Component** (recommended for most cases):
+
 ```tsx
 // app/projects/page.tsx
 async function getProjects() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/projects`, {
-    cache: 'no-store',  // or 'force-cache' for caching
+    cache: 'no-store', // or 'force-cache' for caching
   });
   if (!res.ok) throw new Error('Failed to fetch');
   return res.json();
@@ -243,8 +258,9 @@ export default async function ProjectsPage() {
 ```
 
 **Client Component** (for interactive features):
+
 ```tsx
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
 
@@ -253,8 +269,8 @@ export function ProjectList() {
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/projects`)
-      .then(res => res.json())
-      .then(data => setProjects(data));
+      .then((res) => res.json())
+      .then((data) => setProjects(data));
   }, []);
 
   return <div>{/* render projects */}</div>;
@@ -264,14 +280,16 @@ export function ProjectList() {
 ### Authentication
 
 The backend uses JWT Bearer tokens. Store tokens in:
+
 - HttpOnly cookies (server-side) for security (recommended)
 - Or localStorage with proper security measures
 
 Example API call with auth:
+
 ```typescript
 const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/protected`, {
   headers: {
-    'Authorization': `Bearer ${token}`,
+    Authorization: `Bearer ${token}`,
     'Content-Type': 'application/json',
   },
 });
@@ -342,10 +360,7 @@ export function useCreateProject() {
 
 ```typescript
 // lib/api/fetch-handler.ts
-export async function fetchWithErrorHandling<T>(
-  url: string,
-  options?: RequestInit
-): Promise<T> {
+export async function fetchWithErrorHandling<T>(url: string, options?: RequestInit): Promise<T> {
   try {
     const res = await fetch(url, options);
     if (!res.ok) {
@@ -364,6 +379,7 @@ export async function fetchWithErrorHandling<T>(
 ## Component Organization
 
 **Recommended structure** (feature-based):
+
 ```
 components/
 ├── ui/              # shadcn/ui base components (don't modify directly)
@@ -387,6 +403,7 @@ components/
 ```
 
 **Component best practices**:
+
 - Keep components small and focused
 - Use TypeScript for all components
 - Extract reusable logic into custom hooks
@@ -398,6 +415,7 @@ components/
 ## TypeScript Configuration
 
 **Key settings from `tsconfig.json`**:
+
 - Target: ES2017
 - Module: esnext
 - Strict mode: enabled
@@ -405,6 +423,7 @@ components/
 - Path aliases: `@/*` → `./`
 
 **Type checking**:
+
 ```bash
 pnpm build  # includes type checking
 npx tsc --noEmit  # type check only
@@ -413,12 +432,14 @@ npx tsc --noEmit  # type check only
 ## Linting
 
 Uses ESLint with Next.js config:
+
 ```bash
 pnpm lint
 npm run lint
 ```
 
 Configured in `eslint.config.mjs` with:
+
 - `eslint-config-next/core-web-vitals` for general rules
 - `eslint-config-next/typescript` for TypeScript rules
 
@@ -463,6 +484,7 @@ export interface CreateProjectDTO {
 ```
 
 **Type organization**:
+
 ```
 types/
 ├── index.ts           # Export all types
@@ -511,6 +533,7 @@ describe('ProjectCard', () => {
 ```
 
 **Testing commands** (when configured):
+
 ```bash
 pnpm test              # Run all tests
 pnpm test:ui           # Run tests with UI
@@ -520,12 +543,14 @@ pnpm test:coverage     # Run tests with coverage
 ## Current Implementation Status
 
 **Completed**:
+
 - ✅ Project scaffolded with Next.js 16 + React 19
 - ✅ TypeScript configured with path aliases
 - ✅ Tailwind CSS 4 + shadcn/ui setup
 - ✅ Basic auth pages (login/register UI)
 
 **Pending**:
+
 - ❌ API integration layer
 - ❌ Protected routes with authentication
 - ❌ Dashboard pages (client, freelancer)
@@ -538,7 +563,7 @@ pnpm test:coverage     # Run tests with coverage
 
 1. **Before starting**:
    - Ensure backend is running: `cd ../FreelancerUp-BE && ./mvnw spring-boot:run`
-   - Create `.env.local` with `NEXT_PUBLIC_API_URL=http://localhost:8081/api/v1`
+   - Create `.env.local` with `NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1`
    - Install dependencies: `pnpm install`
 
 2. **Creating new pages**:
@@ -550,6 +575,7 @@ pnpm test:coverage     # Run tests with coverage
    - Add `error.tsx` for error boundaries
 
 3. **Creating new features** (recommended structure):
+
    ```
    components/project/
    ├── project-card.tsx          # Server component
@@ -571,9 +597,11 @@ pnpm test:coverage     # Run tests with coverage
    - Separate server and client components when needed
 
 5. **Adding shadcn/ui components**:
+
    ```bash
    npx shadcn@latest add [component-name]
    ```
+
    Components are added to `components/ui/` - don't modify directly, extend them
 
 6. **Type safety workflow**:
@@ -610,6 +638,7 @@ pnpm test:coverage     # Run tests with coverage
 For backend API details, see `../FreelancerUp-BE/CLAUDE.md` and `../FreelancerUp-BE/docs/API_DOCUMENTATION.md`.
 
 **Key backend endpoints** (refer to Swagger UI for complete list):
+
 - Authentication: `/api/v1/auth/*`
 - Clients: `/api/v1/clients/*`
 - Freelancers: `/api/v1/freelancers/*`

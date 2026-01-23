@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { clientService } from '../services/clientService';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import type { RegisterClientRequest } from '@/types/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,6 +29,7 @@ type CompanySize = '1-10' | '11-50' | '51-200' | '201-500' | '500+';
 
 export function ClientRegistrationForm() {
   const router = useRouter();
+  const { refreshUser } = useAuth();
   const [formData, setFormData] = useState<RegisterClientRequest>({
     companyName: '',
     industry: '',
@@ -36,8 +38,10 @@ export function ClientRegistrationForm() {
 
   const mutation = useMutation({
     mutationFn: (data: RegisterClientRequest) => clientService.register(data),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success('Client registration successful!');
+      // Refresh user data to get the updated role
+      await refreshUser();
       setTimeout(() => {
         window.location.href = '/dashboard/client';
       }, 1000);
